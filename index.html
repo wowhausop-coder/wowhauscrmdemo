@@ -130,6 +130,20 @@ button{cursor:pointer}
 .notice{padding:10px 12px;border:1px solid #f3d5c1;background:#fff8f2;border-radius:8px;color:#805a3d;font-size:12px;margin-bottom:14px}
 .hero-choices{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.hero-choice{padding:17px;cursor:pointer}.hero-choice:hover{background:#fff9f5}.hero-choice b{display:block;margin-bottom:5px}
 @media(max-width:1200px){.sidebar{width:175px}.main{margin-left:175px;width:calc(100% - 175px)}.grid4,.grid6{grid-template-columns:repeat(2,1fr)}.cols2,.cols2equal,.split,.finance-main{grid-template-columns:1fr}.hero-choices{grid-template-columns:repeat(2,1fr)}}
+
+.project-tabs{display:flex;gap:16px;border-bottom:1px solid var(--line2);margin-top:8px}
+.project-tabs button{border:0;background:transparent;padding:9px 2px;border-bottom:2px solid transparent;color:#777;font-size:12px}
+.project-tabs button.active{color:var(--orange);border-color:var(--orange)}
+.project-gantt{position:relative;height:145px;border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:
+repeating-linear-gradient(to right,#fff 0,#fff calc(8.333% - 1px),#f0ede8 calc(8.333% - 1px),#f0ede8 8.333%)}
+.project-gantt-head{display:grid;grid-template-columns:repeat(12,1fr);height:28px;border-bottom:1px solid var(--line2);font-size:9px;color:#888}
+.project-gantt-head span{display:grid;place-items:center}
+.project-gantt-body{position:relative;height:116px}
+.project-task{position:absolute;height:28px;border-radius:5px;padding:7px 8px;font-size:10px;white-space:nowrap;overflow:hidden}
+.project-today{position:absolute;top:0;bottom:0;width:2px;background:var(--orange);left:67%}
+.project-today:before{content:"Сегодня";position:absolute;top:4px;left:4px;background:var(--orange);color:#fff;padding:3px 5px;border-radius:4px;font-size:9px}
+.inline-edit{border:0;background:transparent;color:var(--orange);font-size:11px;padding:0}
+
 </style>
 </head>
 <body>
@@ -170,6 +184,7 @@ const defaultState={
  assumptions:{subcontract:25,travel:5,overhead:18,reserve:5}
 };
 let state=loadState();
+let salesState={tab:'all',query:''};
 function clone(o){return JSON.parse(JSON.stringify(o))}
 function loadState(){try{let s=localStorage.getItem('wowhausDemoV3');return s?JSON.parse(s):clone(defaultState)}catch(e){return clone(defaultState)}}
 function saveState(){localStorage.setItem('wowhausDemoV3',JSON.stringify(state))}
@@ -203,10 +218,81 @@ function renderProjects(){
  document.getElementById('view').innerHTML=pageHeader('Проекты','Список проектов бюро и быстрый переход в карточку.')
  +`<div class="card panel"><table class="table"><thead><tr><th>Проект</th><th>Клиент</th><th>Статус</th><th>Стадия</th><th>Бюджет</th><th>Руководитель</th></tr></thead><tbody>${state.projects.map(p=>`<tr class="clickable" onclick="openProject(${p.id})"><td><div class="project-name">${thumb()}<div><b>${p.name}</b><div class="small">${p.type}<br>${p.place}</div></div></div></td><td>${p.client}</td><td><span class="pill ${p.status==='Риск'?'red':''}">${p.status}</span></td><td>${p.stage}</td><td>${money(p.budget)} млн ₽</td><td>${p.pm}</td></tr>`).join('')}</tbody></table></div>`;
 }
+
+function salesCount(tab){
+ if(tab==='all') return state.projects.length;
+ if(tab==='work') return state.projects.filter(p=>p.stage==='В работе').length;
+ if(tab==='won') return state.projects.filter(p=>p.stage==='Выиграно').length;
+ if(tab==='lost') return state.projects.filter(p=>p.stage==='Проиграно').length;
+ return state.projects.length;
+}
+function filteredSalesProjects(){
+ let arr=[...state.projects];
+ if(salesState.tab==='work') arr=arr.filter(p=>p.stage==='В работе');
+ if(salesState.tab==='won') arr=arr.filter(p=>p.stage==='Выиграно');
+ if(salesState.tab==='lost') arr=arr.filter(p=>p.stage==='Проиграно');
+ const q=(salesState.query||'').trim().toLowerCase();
+ if(q){
+   arr=arr.filter(p=>[p.name,p.type,p.place,p.client,p.pm,p.role,p.stage].join(' ').toLowerCase().includes(q));
+ }
+ return arr;
+}
+function setSalesTab(tab){salesState.tab=tab; renderSales();}
+function setSalesQuery(q){salesState.query=q; renderSales();}
+function salesYearChanged(){showToast('Период переключён (демо)')}
+function editStage(id){
+ state.currentProject=id; let p=project(id);
+ document.getElementById('modalTitle').textContent='Изменить стадию';
+ document.getElementById('modalBody').innerHTML=`<div class="field"><label>Проект</label><input value="${p.name}" disabled></div>
+ <div class="field"><label>Стадия</label><select id="stageSelect">
+ <option>Лид</option><option>Переговоры</option><option>Компред</option><option>В работе</option><option>Выиграно</option><option>Проиграно</option></select></div>
+ <button class="btn primary" onclick="saveStage()">Сохранить</button>`;
+ openModal();
+ document.getElementById('stageSelect').value=p.stage;
+}
+function saveStage(){
+ let p=current();
+ p.stage=document.getElementById('stageSelect').value;
+ if(p.stage==='Выиграно'){p.status='В работе'; p.prob=100;}
+ if(p.stage==='Проиграно'){p.status='Пауза'; p.prob=0;}
+ saveState(); closeModal(); renderSales(); showToast('Стадия обновлена');
+}
+function openSalesRowActions(id){
+ const p=project(id);
+ state.currentProject=id;
+ document.getElementById('modalTitle').textContent='Действия по лиду';
+ document.getElementById('modalBody').innerHTML=`<div class="small" style="margin-bottom:12px">${p.name}</div>
+ <div style="display:flex;flex-direction:column;gap:8px">
+ <button class="btn" onclick="closeModal();openProject(${id})">Открыть дашборд проекта</button>
+ <button class="btn" onclick="closeModal();editStage(${id})">Изменить стадию</button>
+ <button class="btn" onclick="closeModal();editProbability(${id})">Изменить вероятность</button>
+ <button class="btn" onclick="closeModal();showToast('Экспорт карточки лида — демо')">Экспорт карточки</button>
+ </div>`;
+ openModal();
+}
 function renderSales(){
  const avg=Math.round(state.projects.reduce((s,p)=>s+p.prob,0)/state.projects.length);
- const rows=state.projects.map(p=>`<tr class="clickable" onclick="openProject(${p.id})"><td><div class="project-name">${thumb()}<div><b>${p.name}</b><div class="small">${p.type}<br>${p.place}</div></div></div></td><td>${p.client}</td><td><span class="pill">${p.stage}</span></td><td>${money(p.budget)}</td><td><div style="display:flex;align-items:center;gap:7px"><b>${p.prob}%</b><button class="btn" style="padding:4px 6px" onclick="event.stopPropagation();editProbability(${p.id})">изменить</button></div><div class="progress" style="width:110px;margin-top:5px"><span style="width:${p.prob}%"></span></div></td><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar">${p.pm.split(' ').map(x=>x[0]).join('').slice(0,2)}</div><div>${p.pm}<div class="small">${p.role}</div></div></div></td><td>${p.finish}</td></tr>`).join('');
- document.getElementById('view').innerHTML=pageHeader('Дашборд продаж','Аналитика по продажам, воронка проектов, прогноз выручки и ключевые показатели.',`<select class="select"><option>Текущий год — 2025</option></select><button class="btn primary" onclick="openLeadModal()">+ Добавить лид</button><button class="btn">Экспорт</button><button class="btn">Поделиться</button>`)
+ const rows=filteredSalesProjects().map(p=>`<tr>
+   <td><div class="project-name" style="cursor:pointer" onclick="openProject(${p.id})">${thumb()}<div><b>${p.name}</b><div class="small">${p.type}<br>${p.place}</div></div></div></td>
+   <td>${p.client}</td>
+   <td><button class="btn" style="padding:4px 8px;border-radius:999px" onclick="editStage(${p.id})">${p.stage} ▾</button></td>
+   <td>${money(p.budget)}</td>
+   <td>
+     <div style="display:flex;align-items:center;gap:7px"><b>${p.prob}%</b><button class="btn" style="padding:4px 6px" onclick="editProbability(${p.id})">изменить</button></div>
+     <div class="progress" style="width:110px;margin-top:5px"><span style="width:${p.prob}%"></span></div>
+   </td>
+   <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar">${p.pm.split(' ').map(x=>x[0]).join('').slice(0,2)}</div><div>${p.pm}<div class="small">${p.role}</div></div></div></td>
+   <td>${p.finish}</td>
+   <td style="text-align:right"><button class="btn" style="padding:4px 9px" onclick="openSalesRowActions(${p.id})">⋯</button></td>
+ </tr>`).join('');
+ document.getElementById('view').innerHTML=pageHeader(
+ 'Дашборд продаж',
+ 'Аналитика по продажам, воронка проектов, прогноз выручки и ключевые показатели по направлению архитектурного проектирования.',
+ `<select class="select" onchange="salesYearChanged()"><option>Текущий год — 2025</option><option>2024</option></select>
+  <button class="btn primary" onclick="openLeadModal()">+ Добавить лид</button>
+  <button class="btn" onclick="showToast('Экспорт подготовлен (демо)')">Экспорт</button>
+  <button class="btn" onclick="showToast('Ссылка для совместного просмотра создана (демо)')">Поделиться</button>
+  <button class="btn" onclick="showToast('Синхронизация с Pyrus выполнена (демо)')">Синхронизировать</button>`)
  +`<div class="grid4">
  ${kpi('Воронка, млн ₽',money(totalPipeline()),'Сумма на всех стадиях','▥','ic-orange')}
  ${kpi('Weighted pipeline, млн ₽',money(weighted()),'С учётом вероятности','🏆','ic-green')}
@@ -214,12 +300,45 @@ function renderSales(){
  ${kpi('Средний чек, млн ₽',money(totalPipeline()/state.projects.length),'По 3 проектам','▤','ic-purple')}
  </div>
  <div class="cols2">
-  <div class="card panel"><h3>Воронка продаж, млн ₽</h3><div class="funnel"><div class="step">Лид<b>${money(totalPipeline())}</b></div><div class="step">Переговоры<b>${money(totalPipeline()*.64)}</b></div><div class="step">Компред<b>${money(totalPipeline()*.36)}</b></div><div class="step">Weighted<b>${money(weighted())}</b></div></div><div class="funnel-stats"><div>100%</div><div>64%</div><div>36%</div><div>${Math.round(weighted()/totalPipeline()*100)}%</div></div></div>
-  <div class="card panel"><div class="section-title"><h3>Ожидаемая выручка по месяцам, млн ₽</h3><div class="small">● Базовый сценарий &nbsp; ● Потенциально</div></div><div class="chart"><div class="chart-bars">${[14,20,31,39,46,53,60,68,76,85,94,100].map(h=>`<div class="bar" style="height:${h}%"></div>`).join('')}</div></div><div class="months">${['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'].map(m=>`<span>${m}</span>`).join('')}</div></div>
+  <div class="card panel">
+   <h3>Воронка продаж, млн ₽</h3>
+   <div class="funnel">
+     <div class="step">Лид<b>${money(totalPipeline())}</b><div class="small">42 проекта</div></div>
+     <div class="step">Переговоры<b>${money(totalPipeline()*.64)}</b><div class="small">24 проекта</div></div>
+     <div class="step">Компред<b>${money(totalPipeline()*.36)}</b><div class="small">12 проектов</div></div>
+     <div class="step">Weighted<b>${money(weighted())}</b><div class="small">8 проектов</div></div>
+   </div>
+   <div class="funnel-stats"><div>100%</div><div>64%</div><div>36%</div><div>${Math.round(weighted()/totalPipeline()*100)}%</div></div>
+  </div>
+  <div class="card panel">
+    <div class="section-title"><h3>Ожидаемая выручка по месяцам, млн ₽</h3><div class="small">● Базовый сценарий &nbsp;&nbsp; ● Потенциально</div></div>
+    <div class="chart"><div class="chart-bars">${[14,20,31,39,46,53,60,68,76,85,94,100].map(h=>`<div class="bar" style="height:${h}%"></div>`).join('')}</div></div>
+    <div class="months">${['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'].map(m=>`<span>${m}</span>`).join('')}</div>
+  </div>
  </div>
- <div class="card panel"><div class="section-title"><div><h3 style="margin-bottom:8px">Лиды и проекты</h3><div class="tabs"><button class="tab active">Все 3</button><button class="tab">В работе</button><button class="tab">Выиграно</button><button class="tab">Проиграно</button></div></div><input class="search" placeholder="Поиск по проектам, клиентам..."></div><div class="table-wrap"><table class="table"><thead><tr><th>Проект</th><th>Клиент</th><th>Стадия</th><th>Бюджет, млн ₽</th><th>Вероятность</th><th>Ответственный</th><th>Плановая дата</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+ <div class="card panel">
+   <div class="section-title">
+     <div>
+       <h3 style="margin-bottom:8px">Лиды и проекты</h3>
+       <div class="tabs">
+         <button class="tab ${salesState.tab==='all'?'active':''}" onclick="setSalesTab('all')">Все ${salesCount('all')}</button>
+         <button class="tab ${salesState.tab==='work'?'active':''}" onclick="setSalesTab('work')">В работе ${salesCount('work')}</button>
+         <button class="tab ${salesState.tab==='won'?'active':''}" onclick="setSalesTab('won')">Выиграно ${salesCount('won')}</button>
+         <button class="tab ${salesState.tab==='lost'?'active':''}" onclick="setSalesTab('lost')">Проиграно ${salesCount('lost')}</button>
+       </div>
+     </div>
+     <input class="search" placeholder="Поиск по проектам, клиентам..." value="${salesState.query}" oninput="setSalesQuery(this.value)">
+   </div>
+   <div class="table-wrap">
+     <table class="table">
+      <thead><tr><th>Проект</th><th>Клиент</th><th>Стадия</th><th>Бюджет, млн ₽</th><th>Вероятность</th><th>Ответственный</th><th>Плановая дата</th><th></th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="8" class="small" style="padding:20px">По текущему фильтру ничего не найдено</td></tr>`}</tbody>
+     </table>
+   </div>
+ </div>`;
 }
 function editProbability(id){
+
  state.currentProject=id;let p=project(id);
  document.getElementById('modalTitle').textContent='Вероятность сделки';
  document.getElementById('modalBody').innerHTML=`<div class="field"><label>Проект</label><input value="${p.name}" disabled></div><div class="field"><label>Вероятность, %</label><input id="probInput" type="number" min="0" max="100" value="${p.prob}"></div><button class="btn primary" onclick="saveProbability()">Сохранить</button>`;openModal()
@@ -230,43 +349,102 @@ function openLeadModal(){
  document.getElementById('modalBody').innerHTML=`<div class="input-grid"><div class="field"><label>Название</label><input id="leadName"></div><div class="field"><label>Бюджет, млн ₽</label><input id="leadBudget" type="number" value="60"></div></div><div class="input-grid"><div class="field"><label>Клиент</label><input id="leadClient" value="Новый клиент"></div><div class="field"><label>Вероятность, %</label><input id="leadProb" type="number" value="25"></div></div><button class="btn primary" onclick="addLead()">Добавить</button>`;openModal()
 }
 function addLead(){let id=Date.now();state.projects.push({id,name:document.getElementById('leadName').value||'Новый проект',type:'Архитектурный проект',place:'—',client:document.getElementById('leadClient').value||'Новый клиент',stage:'Лид',budget:+document.getElementById('leadBudget').value||60,prob:+document.getElementById('leadProb').value||25,pm:'—',role:'—',finish:'—',status:'Планируется',hoursPlan:4000,hoursFact:0,ready:0,startShift:0,team:4,rate:.0046});saveState();closeModal();renderSales();showToast('Лид добавлен')}
+
 function renderFinance(){
  let p=current(),m=financeMetrics(p);
  let list=state.projects.map(x=>`<div class="project-item ${x.id===p.id?'active':''}" onclick="state.currentProject=${x.id};saveState();renderFinance()"><div class="project-name">${thumb()}<div><b>${x.name}</b><div class="small">${x.type}<br>${x.place}</div><div style="margin-top:6px"><span class="pill ${x.status==='Риск'?'red':''}">${x.status}</span></div></div></div></div>`).join('');
  let actualCost=m.forecastCost*(p.hoursPlan?Math.min(1,p.hoursFact/p.hoursPlan):0);
- let actualMargin=Math.max(0,p.budget*(p.ready/100)-actualCost);
- document.getElementById('view').innerHTML=pageHeader('Финансовые модели','Экономика проектов, план-факт анализ и прогноз прибыльности. Вместо Excel — единая модель с актуальными данными.',`<select class="select"><option>Текущий год — 2025</option></select><button class="btn primary" onclick="editFinance()">Редактировать модель</button><button class="btn">Экспорт</button><button class="btn">Поделиться</button>`)
+ let actualRevenue=p.budget*(p.ready/100);
+ let actualMargin=Math.max(0,actualRevenue-actualCost);
+ let actualMarginPct=actualRevenue?actualMargin/actualRevenue*100:0;
+ let totalPlanCost=state.projects.reduce((s,x)=>s+financeMetrics(x).forecastCost,0);
+ let totalFactCost=state.projects.reduce((s,x)=>{let fm=financeMetrics(x);return s+fm.forecastCost*Math.min(1,x.hoursFact/x.hoursPlan)},0);
+ let totalMargin=state.projects.reduce((s,x)=>s+financeMetrics(x).margin,0);
+ document.getElementById('view').innerHTML=pageHeader(
+ 'Финансовые модели',
+ 'Экономика проектов, план-факт анализ и прогноз прибыльности. Финансовая модель связана с плановыми часами, фактом трудозатрат и графиком проекта.',
+ `<select class="select" onchange="showToast('Период переключён (демо)')"><option>Текущий год — 2025</option><option>2024</option></select>
+  <button class="btn primary" onclick="editFinance()">Редактировать модель</button>
+  <button class="btn" onclick="showToast('Финансовая модель экспортирована (демо)')">Экспорт</button>
+  <button class="btn" onclick="showToast('Ссылка на финансовую модель создана (демо)')">Поделиться</button>`)
  +`<div class="grid4">
- ${kpi('Контракты, млн ₽',money(totalPipeline()),'Сумма по 3 проектам','▤','ic-orange')}
- ${kpi('Плановая себестоимость, млн ₽',money(state.projects.reduce((s,x)=>s+financeMetrics(x).forecastCost,0)),'По согласованным бюджетам','◔','ic-blue')}
- ${kpi('Факт расходов, млн ₽',money(state.projects.reduce((s,x)=>{let fm=financeMetrics(x);return s+fm.forecastCost*Math.min(1,x.hoursFact/x.hoursPlan)},0)),'Освоено на сегодня','●','ic-red')}
- ${kpi('Прогнозная маржа, млн ₽',money(state.projects.reduce((s,x)=>s+financeMetrics(x).margin,0)),'Ожидаемый финансовый результат','▥','ic-green')}
+ ${kpi('Контракты, млн ₽',money(totalPipeline()),'Сумма по активным проектам','▤','ic-orange')}
+ ${kpi('Плановая себестоимость, млн ₽',money(totalPlanCost),'По актуальным плановым часам','◔','ic-blue')}
+ ${kpi('Факт расходов, млн ₽',money(totalFactCost),'Рассчитано по фактическим часам','●','ic-red')}
+ ${kpi('Прогнозная маржа, млн ₽',money(totalMargin),'Автоматический прогноз на завершение','▥','ic-green')}
  </div>
- <div class="split"><div class="card panel"><h3>Проекты</h3><div class="project-list">${list}</div></div><div>
-  <div class="card panel" style="margin-bottom:14px"><div class="section-title"><div><h3 style="margin:0">${p.name}</h3><div class="small">${p.type}, ${p.place}</div></div><div><span class="pill">${p.stage}</span></div></div><div class="tabs"><button class="tab active">Финансовая модель</button><button class="tab">Денежный поток</button><button class="tab">Ресурсы</button><button class="tab">Документы</button></div></div>
-  <div class="finance-main">
-   <div class="card panel"><h3>Финансовая модель, млн ₽</h3><table class="table"><thead><tr><th>Статья</th><th>План</th><th>Факт</th><th>Прогноз</th><th>Отклонение</th></tr></thead><tbody>
-   <tr><td><b>Выручка</b></td><td>${money(p.budget)}</td><td>${money(p.budget*p.ready/100)}</td><td>${money(p.budget)}</td><td>0%</td></tr>
-   <tr><td>ФОТ</td><td>${money(m.labor)}</td><td>${money(m.labor*Math.min(1,p.hoursFact/p.hoursPlan))}</td><td>${money(m.labor)}</td><td class="${p.hoursFact>p.hoursPlan?'down':'up'}">${p.hoursFact>p.hoursPlan?'+':''}${Math.round((p.hoursFact/p.hoursPlan-1)*100)}%</td></tr>
-   <tr><td>Субподряд</td><td>${state.assumptions.subcontract}</td><td>${money(state.assumptions.subcontract*p.ready/100)}</td><td>${state.assumptions.subcontract}</td><td>0%</td></tr>
-   <tr><td>Путевые и командировки</td><td>${state.assumptions.travel}</td><td>${money(state.assumptions.travel*p.ready/100)}</td><td>${state.assumptions.travel}</td><td>0%</td></tr>
-   <tr><td>Накладные расходы</td><td>${state.assumptions.overhead}</td><td>${money(state.assumptions.overhead*p.ready/100)}</td><td>${state.assumptions.overhead}</td><td>0%</td></tr>
-   <tr><td>Резерв</td><td>${state.assumptions.reserve}</td><td>0</td><td>${state.assumptions.reserve}</td><td>0%</td></tr>
-   <tr style="background:#fff8f3"><td><b>Итого себестоимость</b></td><td>—</td><td><b>${money(actualCost)}</b></td><td><b>${money(m.forecastCost)}</b></td><td>${Math.round((m.forecastCost/(p.budget||1))*100)}%</td></tr>
-   <tr style="background:#f4f9fd"><td><b>Маржа</b></td><td>—</td><td><b>${money(actualMargin)}</b></td><td><b class="${m.marginPct<15?'down':'up'}">${money(m.margin)}</b></td><td class="${m.marginPct<15?'down':'up'}">${Math.round(m.marginPct)}%</td></tr>
-   </tbody></table></div>
-   <div><div class="card panel" style="margin-bottom:14px"><div class="section-title"><h3>Денежный поток, млн ₽</h3><span class="small">Помесячно</span></div><div class="small">● Поступления &nbsp; ● Выплаты &nbsp; ● Чистый поток</div><div class="cash-chart"><div class="cash-bars">${[12,18,27,34,44,52,62,58,63,76,84,81].map((h,i)=>`<div class="cash-pair"><span class="in" style="height:${h}%"></span><span class="out" style="height:${Math.max(8,h*.45)}%"></span></div>`).join('')}</div><div class="line"></div></div><div class="months">${['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'].map(m=>`<span>${m}</span>`).join('')}</div></div>
-   <div class="card panel"><div class="section-title"><h3>Трудозатраты и стоимость</h3><span class="pill">Часы</span></div><div style="font-size:24px;font-weight:700">${p.hoursFact.toLocaleString('ru-RU')} / ${p.hoursPlan.toLocaleString('ru-RU')} ч</div><div class="progress" style="margin-top:10px"><span style="width:${Math.min(100,p.hoursFact/p.hoursPlan*100)}%"></span></div></div></div>
+ <div class="split">
+  <div class="card panel">
+   <div class="section-title"><h3>Проекты</h3><span class="small">${state.projects.length}</span></div>
+   <input class="search" style="width:100%;min-width:0;margin-bottom:10px" placeholder="Поиск по проектам..." oninput="filterFinanceProjects(this.value)">
+   <div class="project-list" id="financeProjectList">${list}</div>
   </div>
-  <div class="metric-row" style="margin-top:14px">
-   <div class="card metric-box"><div class="small">Рентабельность (прогноз)</div><div class="big">${Math.round(m.marginPct)}%</div></div>
-   <div class="card metric-box"><div class="small">Точка безубыточности</div><div class="big">${Math.round(m.forecastCost/p.budget*100)}%</div></div>
-   <div class="card metric-box"><div class="small">Остаток до завершения</div><div class="big">${money(Math.max(0,p.budget-p.budget*p.ready/100))} млн ₽</div></div>
-   <div class="card metric-box"><div class="small">Плановое завершение</div><div class="big">${p.finish}</div></div>
+  <div>
+   <div class="card panel" style="margin-bottom:14px">
+    <div class="section-title">
+     <div><h3 style="margin:0">${p.name}</h3><div class="small">${p.type}, ${p.place}</div></div>
+     <span class="pill ${p.status==='Риск'?'red':''}">${p.status}</span>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="showToast('Финансовая модель активна')">Финансовая модель</button>
+      <button class="tab" onclick="scrollFinanceBlock('cashBlock')">Денежный поток</button>
+      <button class="tab" onclick="scrollFinanceBlock('resourceBlock')">Ресурсы</button>
+      <button class="tab" onclick="showToast('Документы проекта — демо')">Документы</button>
+    </div>
+   </div>
+
+   <div class="finance-main">
+    <div class="card panel">
+     <div class="section-title"><h3>Финансовая модель, млн ₽</h3><button class="inline-edit" onclick="editFinance()">Изменить параметры</button></div>
+     <table class="table">
+      <thead><tr><th>Статья</th><th>План</th><th>Факт</th><th>Прогноз</th><th>Отклонение</th></tr></thead>
+      <tbody>
+       <tr><td><b>Выручка</b></td><td>${money(p.budget)}</td><td>${money(actualRevenue)}</td><td>${money(p.budget)}</td><td>0%</td></tr>
+       <tr><td>ФОТ</td><td>${money(m.labor)}</td><td>${money(m.labor*Math.min(1,p.hoursFact/p.hoursPlan))}</td><td>${money(m.labor)}</td><td>${Math.round((p.hoursFact/p.hoursPlan-1)*100)}%</td></tr>
+       <tr><td>Субподряд</td><td>${state.assumptions.subcontract}</td><td>${money(state.assumptions.subcontract*p.ready/100)}</td><td>${state.assumptions.subcontract}</td><td>0%</td></tr>
+       <tr><td>Путевые и командировки</td><td>${state.assumptions.travel}</td><td>${money(state.assumptions.travel*p.ready/100)}</td><td>${state.assumptions.travel}</td><td>0%</td></tr>
+       <tr><td>Накладные расходы</td><td>${state.assumptions.overhead}</td><td>${money(state.assumptions.overhead*p.ready/100)}</td><td>${state.assumptions.overhead}</td><td>0%</td></tr>
+       <tr><td>Резерв</td><td>${state.assumptions.reserve}</td><td>0</td><td>${state.assumptions.reserve}</td><td>0%</td></tr>
+       <tr style="background:#fff8f3"><td><b>Итого себестоимость</b></td><td>${money(m.forecastCost)}</td><td><b>${money(actualCost)}</b></td><td><b>${money(m.forecastCost)}</b></td><td>${Math.round(m.forecastCost/p.budget*100)}%</td></tr>
+       <tr style="background:#f4f9fd"><td><b>Маржа</b></td><td>${money(m.margin)}</td><td><b>${money(actualMargin)}</b></td><td><b class="${m.marginPct<15?'down':'up'}">${money(m.margin)}</b></td><td class="${m.marginPct<15?'down':'up'}">${Math.round(m.marginPct)}%</td></tr>
+      </tbody>
+     </table>
+    </div>
+    <div>
+     <div class="card panel" id="cashBlock" style="margin-bottom:14px">
+      <div class="section-title"><h3>Денежный поток, млн ₽</h3><button class="btn" style="padding:5px 8px" onclick="showToast('Масштаб графика переключён (демо)')">Помесячно ▾</button></div>
+      <div class="small">● Поступления &nbsp;&nbsp; ● Выплаты &nbsp;&nbsp; ● Чистый поток</div>
+      <div class="cash-chart"><div class="cash-bars">${[12,18,27,34,44,52,62,58,63,76,84,81].map((h,i)=>`<div class="cash-pair"><span class="in" style="height:${h}%"></span><span class="out" style="height:${Math.max(8,h*.45)}%"></span></div>`).join('')}</div><div class="line"></div></div>
+      <div class="months">${['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'].map(x=>`<span>${x}</span>`).join('')}</div>
+     </div>
+     <div class="card panel" id="resourceBlock">
+      <div class="section-title"><h3>Трудозатраты и стоимость</h3><button class="btn" style="padding:5px 8px" onclick="showToast('Показатель переключён (демо)')">Часы ▾</button></div>
+      <div style="font-size:25px;font-weight:700">${p.hoursFact.toLocaleString('ru-RU')} / ${p.hoursPlan.toLocaleString('ru-RU')} ч</div>
+      <div class="progress" style="margin-top:10px"><span style="width:${Math.min(100,p.hoursFact/p.hoursPlan*100)}%"></span></div>
+      <div class="risk"><span>Стоимость плановых часов</span><b>${money(m.labor)} млн ₽</b></div>
+      <div class="risk"><span>Факт выполнения часов</span><b>${Math.round(p.hoursFact/p.hoursPlan*100)}%</b></div>
+     </div>
+    </div>
+   </div>
+
+   <div class="metric-row" style="margin-top:14px">
+    <div class="card metric-box"><div class="small">Рентабельность, прогноз</div><div class="big">${Math.round(m.marginPct)}%</div><div class="small">${m.marginPct>=20?'Выше целевого уровня':'Требует внимания'}</div></div>
+    <div class="card metric-box"><div class="small">Маржа, факт</div><div class="big">${Math.round(actualMarginPct)}%</div><div class="small">${money(actualMargin)} млн ₽</div></div>
+    <div class="card metric-box"><div class="small">Остаток выручки</div><div class="big">${money(Math.max(0,p.budget-actualRevenue))} млн ₽</div><div class="small">${100-p.ready}% от контракта</div></div>
+    <div class="card metric-box"><div class="small">Плановое завершение</div><div class="big">${p.finish}</div><div class="small">Сдвиг графика: ${p.startShift} нед.</div></div>
+   </div>
   </div>
- </div></div>`;
+ </div>`;
 }
+function filterFinanceProjects(q){
+ q=(q||'').toLowerCase();
+ document.querySelectorAll('#financeProjectList .project-item').forEach(el=>{
+   el.style.display=el.innerText.toLowerCase().includes(q)?'block':'none';
+ });
+}
+function scrollFinanceBlock(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'center'})}
 function editFinance(){
+
  let p=current();
  document.getElementById('modalTitle').textContent='Редактировать финансовую модель';
  document.getElementById('modalBody').innerHTML=`<div class="field"><label>Проект</label><input value="${p.name}" disabled></div><div class="input-grid"><div class="field"><label>Бюджет, млн ₽</label><input id="finBudget" type="number" step=".1" value="${p.budget}"></div><div class="field"><label>Плановые часы</label><input id="finHours" type="number" value="${p.hoursPlan}"></div></div><div class="field"><label>Стоимость 1 часа, млн ₽</label><input id="finRate" type="number" step=".0001" value="${p.rate}"></div><button class="btn primary" onclick="saveFinance()">Пересчитать</button>`;openModal()
@@ -289,33 +467,107 @@ function renderSchedule(){
  </div>`;
 }
 function shiftSchedule(id){state.currentProject=id;let p=project(id);document.getElementById('modalTitle').textContent='Сдвинуть график';document.getElementById('modalBody').innerHTML=`<div class="field"><label>Проект</label><input value="${p.name}" disabled></div><div class="field"><label>Сдвиг, недель</label><input id="shiftWeeks" type="number" min="0" max="6" value="${p.startShift}"></div><button class="btn primary" onclick="saveShift()">Сохранить</button>`;openModal()}
-function saveShift(){let p=current();p.startShift=Math.max(0,Math.min(6,+document.getElementById('shiftWeeks').value||0));p.status=p.startShift>=2?'Риск':'В работе';saveState();closeModal();renderSchedule();showToast('График обновлён')}
+function saveShift(){let p=current();p.startShift=Math.max(0,Math.min(6,+document.getElementById('shiftWeeks').value||0));p.status=p.startShift>=2?'Риск':'В работе';saveState();closeModal();if(location.hash==='#project'){renderProject()}else{renderSchedule()}showToast('График обновлён')}
 function renderLoad(){
  let rows=state.projects.map(p=>{let load=Math.min(140,Math.round((p.hoursPlan/12000)*100+p.startShift*8));let wh=Math.round(p.hoursPlan*p.prob/100);return `<tr><td><div class="project-name">${thumb()}<div><b>${p.name}</b><div class="small">${p.type}</div></div></div></td><td>${p.prob}%</td><td>${p.hoursPlan.toLocaleString('ru-RU')}</td><td>${wh.toLocaleString('ru-RU')}</td><td><b class="${load>100?'down':''}">${load}%</b><div class="progress" style="width:160px;margin-top:5px"><span style="width:${Math.min(100,load)}%"></span></div></td><td><span class="pill ${load>100?'red':''}">${load>100?'Перегрузка':p.status}</span></td></tr>`}).join('');
  document.getElementById('view').innerHTML=pageHeader('Загрузка проектов','Плановая загрузка сотрудников по проектам, с учётом продаж и сдвигов графика.')
  +`<div class="grid4">${kpi('Weighted hours',state.projects.reduce((s,p)=>s+p.hoursPlan*p.prob/100,0).toFixed(0),'С учётом вероятности','▥','ic-orange')}${kpi('Средняя загрузка','87%','по активным проектам','◔','ic-green')}${kpi('Перегрузка',state.projects.filter(p=>(p.hoursPlan/12000*100+p.startShift*8)>100).length,'проектов выше 100%','!','ic-red')}${kpi('Weighted pipeline',money(weighted())+' млн ₽','для планирования ресурсов','▤','ic-purple')}</div><div class="card panel"><table class="table"><thead><tr><th>Проект</th><th>Вероятность</th><th>Плановые часы</th><th>Weighted hours</th><th>Загрузка</th><th>Статус</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
+
 function renderProject(){
  let p=current(),m=financeMetrics(p),load=Math.min(140,Math.round((p.hoursPlan/12000)*100+p.startShift*8));
- document.getElementById('view').innerHTML=pageHeader('Дашборд проекта','Единый паспорт проекта: сроки, финансы, команда, часы и риски.',`<button class="btn primary" onclick="editProject()">+ Добавить</button><button class="btn">Экспорт</button>`)
- +`<div class="card project-header"><div class="hero-thumb"></div><div><div class="section-title"><div><h2 style="margin:0 0 5px">${p.name}</h2><div class="muted">${p.type}, ${p.place}</div></div><span class="pill ${p.status==='Риск'?'red':''}">${p.status}</span></div><div class="header-fields"><div class="header-field"><div class="label">Клиент</div><b>${p.client}</b></div><div class="header-field"><div class="label">Стадия</div><b>${p.stage}</b></div><div class="header-field"><div class="label">Руководитель проекта</div><b>${p.pm}</b></div><div class="header-field"><div class="label">Плановая дата завершения</div><b>${p.finish}</b></div></div></div></div>
- <div class="grid6">
- ${kpi('Статус',p.status,'Реализация по плану','⌁','ic-orange')}
- ${kpi('Готовность',p.ready+'%','План 65%','◔','ic-green')}
- ${kpi('Бюджет / факт',money(p.budget)+' / '+money(p.budget*p.ready/100),'млн ₽','●','ic-orange')}
- ${kpi('Маржа',Math.round(m.marginPct)+'%','План 19%','%','ic-green')}
- ${kpi('Часы план / факт',p.hoursPlan.toLocaleString('ru-RU')+' / '+p.hoursFact.toLocaleString('ru-RU'),'трудозатраты','◷','ic-orange')}
- ${kpi('Команда',p.team+' человек','5 дисциплин','●','ic-blue')}
+ const monthNames=['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+ const shift=p.startShift*2.2;
+ document.getElementById('view').innerHTML=pageHeader(
+ 'Дашборд проекта',
+ 'Единый паспорт проекта: сроки, финансы, команда, часы, риски и актуальный график проекта.',
+ `<button class="btn primary" onclick="editProject()">Редактировать</button>
+  <button class="btn" onclick="setView('schedule')">Открыть общий график</button>
+  <button class="btn" onclick="showToast('Карточка проекта экспортирована (демо)')">Экспорт</button>`)
+ +`<div class="card project-header">
+   <div class="hero-thumb"></div>
+   <div>
+    <div class="section-title">
+     <div><h2 style="margin:0 0 5px">${p.name}</h2><div class="muted">${p.type}, ${p.place}</div></div>
+     <span class="pill ${p.status==='Риск'?'red':''}">${p.status}</span>
+    </div>
+    <div class="header-fields">
+     <div class="header-field"><div class="label">Клиент</div><b>${p.client}</b></div>
+     <div class="header-field"><div class="label">Стадия</div><b>${p.stage}</b></div>
+     <div class="header-field"><div class="label">Руководитель проекта</div><b>${p.pm}</b><div class="small">${p.role}</div></div>
+     <div class="header-field"><div class="label">Плановая дата завершения</div><b>${p.finish}</b></div>
+    </div>
+   </div>
  </div>
+
+ <div class="grid6">
+ ${kpi('Статус',p.status,p.startShift>=2?'Есть отклонение по срокам':'Реализация по плану','⌁','ic-orange')}
+ ${kpi('Готовность',p.ready+'%','Текущая готовность','◔','ic-green')}
+ ${kpi('Бюджет / факт',money(p.budget)+' / '+money(p.budget*p.ready/100),'млн ₽','●','ic-orange')}
+ ${kpi('Маржа',Math.round(m.marginPct)+'%','Прогноз на завершение','%','ic-green')}
+ ${kpi('Часы план / факт',p.hoursPlan.toLocaleString('ru-RU')+' / '+p.hoursFact.toLocaleString('ru-RU'),'Трудозатраты','◷','ic-orange')}
+ ${kpi('Команда',p.team+' человек','Текущий состав','●','ic-blue')}
+ </div>
+
+ <div class="card panel" style="margin-bottom:14px">
+  <div class="section-title">
+   <div><h3 style="margin-bottom:3px">График проекта</h3><div class="small">График связан с общим портфелем проектов. Изменение сроков здесь отражается в модуле «Графики проектов» и в загрузке.</div></div>
+   <button class="btn" onclick="shiftSchedule(${p.id})">Изменить сроки</button>
+  </div>
+  <div class="project-gantt">
+   <div class="project-gantt-head">${monthNames.map(x=>`<span>${x}</span>`).join('')}</div>
+   <div class="project-gantt-body">
+    <div class="project-today"></div>
+    <div class="project-task t1" style="left:${4+shift}%;width:14%;top:14px">Концепция</div>
+    <div class="project-task t2" style="left:${20+shift}%;width:16%;top:14px">Эскиз</div>
+    <div class="project-task t3" style="left:${41+shift}%;width:17%;top:54px">ПД</div>
+    <div class="project-task t3" style="left:${57+shift}%;width:20%;top:54px">РД</div>
+    <div class="project-task t4" style="left:${78+shift*.7}%;width:15%;top:14px">Согласования</div>
+   </div>
+  </div>
+ </div>
+
  <div class="cols2">
-  <div><div class="card panel" style="margin-bottom:14px"><h3>Стадии проекта</h3><div class="stageflow"><div>Предпроект<br><b>100%</b></div><div>Концепция<br><b>100%</b></div><div class="active">Проектная документация<br><b>75%</b></div><div>Рабочая документация<br><b>45%</b></div><div>Строительство<br><b>0%</b></div></div></div>
-  <div class="card panel"><div class="section-title"><h3>Часы и загрузка команды</h3><span class="small">По дисциплинам</span></div><table class="table"><thead><tr><th>Дисциплина</th><th>План, ч</th><th>Факт, ч</th><th>Загрузка</th></tr></thead><tbody><tr><td>Архитектура</td><td>3 200</td><td>2 480</td><td><div class="progress"><span style="width:78%"></span></div></td></tr><tr><td>Конструкции</td><td>2 400</td><td>1 720</td><td><div class="progress"><span style="width:72%"></span></div></td></tr><tr><td>Инженерные сети</td><td>2 800</td><td>1 960</td><td><div class="progress"><span style="width:70%"></span></div></td></tr><tr><td>Благоустройство</td><td>1 200</td><td>1 020</td><td><div class="progress"><span style="width:85%"></span></div></td></tr></tbody></table></div></div>
-  <div><div class="card panel" style="margin-bottom:14px"><div class="section-title"><h3>Ключевые вехи</h3><span class="small">Все вехи (12)</span></div><div class="risk"><span>Согласование концепции с заказчиком</span><span class="pill green">готово</span></div><div class="risk"><span>Завершение проектной документации</span><span class="pill">30.09.2025</span></div><div class="risk"><span>Экспертиза ПД</span><span class="pill blue">15.10.2025</span></div><div class="risk"><span>Начало разработки РД</span><span class="small">20.11.2025</span></div></div>
-  <div class="card panel" style="margin-bottom:14px"><h3>Финансовая сводка, млн ₽</h3><div class="risk"><span>Бюджет (план)</span><b>${money(p.budget)}</b></div><div class="risk"><span>Прогноз себестоимости</span><b>${money(m.forecastCost)}</b></div><div class="risk"><span>Маржа (прогноз)</span><b class="${m.marginPct<15?'down':'up'}">${Math.round(m.marginPct)}%</b></div></div>
-  <div class="card panel"><div class="section-title"><h3>Риски и вопросы</h3><span class="small">Все (3)</span></div><div class="risk"><span>Риск сроков получения экспертизы</span><span class="pill ${p.startShift>=2?'red':'green'}">${p.startShift>=2?'Высокий':'Низкий'}</span></div><div class="risk"><span>Загрузка команды</span><span class="pill ${load>100?'red':'green'}">${load}%</span></div></div></div>
+  <div>
+   <div class="card panel" style="margin-bottom:14px">
+    <div class="section-title"><h3>Стадии проекта</h3><span class="small">Готовность ${p.ready}%</span></div>
+    <div class="stageflow"><div>Предпроект<br><b>100%</b></div><div>Концепция<br><b>100%</b></div><div class="active">Проектная документация<br><b>75%</b></div><div>Рабочая документация<br><b>45%</b></div><div>Строительство<br><b>0%</b></div></div>
+   </div>
+   <div class="card panel">
+    <div class="section-title"><h3>Часы и загрузка команды</h3><button class="inline-edit" onclick="editProject()">Обновить факт</button></div>
+    <table class="table"><thead><tr><th>Дисциплина</th><th>План, ч</th><th>Факт, ч</th><th>Загрузка</th></tr></thead><tbody>
+     <tr><td>Архитектура</td><td>3 200</td><td>2 480</td><td><div class="progress"><span style="width:78%"></span></div></td></tr>
+     <tr><td>Конструкции</td><td>2 400</td><td>1 720</td><td><div class="progress"><span style="width:72%"></span></div></td></tr>
+     <tr><td>Инженерные сети</td><td>2 800</td><td>1 960</td><td><div class="progress"><span style="width:70%"></span></div></td></tr>
+     <tr><td>Благоустройство</td><td>1 200</td><td>1 020</td><td><div class="progress"><span style="width:85%"></span></div></td></tr>
+    </tbody></table>
+   </div>
+  </div>
+  <div>
+   <div class="card panel" style="margin-bottom:14px">
+    <div class="section-title"><h3>Ключевые вехи</h3><button class="inline-edit" onclick="shiftSchedule(${p.id})">Редактировать график</button></div>
+    <div class="risk"><span>Согласование концепции с заказчиком</span><span class="pill green">готово</span></div>
+    <div class="risk"><span>Завершение проектной документации</span><span class="pill">30.09.2025</span></div>
+    <div class="risk"><span>Экспертиза ПД</span><span class="pill blue">15.10.2025</span></div>
+    <div class="risk"><span>Начало разработки РД</span><span class="small">20.11.2025</span></div>
+   </div>
+   <div class="card panel" style="margin-bottom:14px">
+    <div class="section-title"><h3>Финансовая сводка, млн ₽</h3><button class="inline-edit" onclick="setView('finance')">Открыть финмодель</button></div>
+    <div class="risk"><span>Бюджет</span><b>${money(p.budget)}</b></div>
+    <div class="risk"><span>Прогноз себестоимости</span><b>${money(m.forecastCost)}</b></div>
+    <div class="risk"><span>Прогноз маржи</span><b class="${m.marginPct<15?'down':'up'}">${money(m.margin)} · ${Math.round(m.marginPct)}%</b></div>
+   </div>
+   <div class="card panel">
+    <div class="section-title"><h3>Риски и вопросы</h3><span class="small">Автоматические сигналы</span></div>
+    <div class="risk"><span>Сдвиг графика</span><span class="pill ${p.startShift>=2?'red':'green'}">${p.startShift} нед.</span></div>
+    <div class="risk"><span>Загрузка команды</span><span class="pill ${load>100?'red':'green'}">${load}%</span></div>
+    <div class="risk"><span>Прогноз маржи</span><span class="pill ${m.marginPct<15?'red':'green'}">${Math.round(m.marginPct)}%</span></div>
+   </div>
+  </div>
  </div>`;
 }
-function editProject(){let p=current();document.getElementById('modalTitle').textContent='Обновить проект';document.getElementById('modalBody').innerHTML=`<div class="input-grid"><div class="field"><label>Готовность, %</label><input id="prReady" type="number" value="${p.ready}"></div><div class="field"><label>Факт часов</label><input id="prFact" type="number" value="${p.hoursFact}"></div></div><div class="input-grid"><div class="field"><label>Команда</label><input id="prTeam" type="number" value="${p.team}"></div><div class="field"><label>Дата завершения</label><input id="prFinish" value="${p.finish}"></div></div><button class="btn primary" onclick="saveProject()">Сохранить</button>`;openModal()}
+function editProject(){
+let p=current();document.getElementById('modalTitle').textContent='Обновить проект';document.getElementById('modalBody').innerHTML=`<div class="input-grid"><div class="field"><label>Готовность, %</label><input id="prReady" type="number" value="${p.ready}"></div><div class="field"><label>Факт часов</label><input id="prFact" type="number" value="${p.hoursFact}"></div></div><div class="input-grid"><div class="field"><label>Команда</label><input id="prTeam" type="number" value="${p.team}"></div><div class="field"><label>Дата завершения</label><input id="prFinish" value="${p.finish}"></div></div><button class="btn primary" onclick="saveProject()">Сохранить</button>`;openModal()}
 function saveProject(){let p=current();p.ready=Math.max(0,Math.min(100,+document.getElementById('prReady').value||p.ready));p.hoursFact=+document.getElementById('prFact').value||p.hoursFact;p.team=+document.getElementById('prTeam').value||p.team;p.finish=document.getElementById('prFinish').value||p.finish;saveState();closeModal();renderProject();showToast('Проект обновлён')}
 function openProject(id){state.currentProject=id;saveState();setView('project')}
 function setView(name){
