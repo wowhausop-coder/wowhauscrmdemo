@@ -144,6 +144,28 @@ repeating-linear-gradient(to right,#fff 0,#fff calc(8.333% - 1px),#f0ede8 calc(8
 .project-today:before{content:"Сегодня";position:absolute;top:4px;left:4px;background:var(--orange);color:#fff;padding:3px 5px;border-radius:4px;font-size:9px}
 .inline-edit{border:0;background:transparent;color:var(--orange);font-size:11px;padding:0}
 
+
+/* v6 desktop interaction tuning */
+@media (min-width:1201px){
+  .btn,.select,.tab,.nav button,.inline-edit{min-height:36px}
+  .btn{padding:9px 14px}
+  .tab{padding:10px 8px}
+  .nav button{padding:11px 12px}
+  .table td{padding-top:13px;padding-bottom:13px}
+  .project-item{padding:13px}
+  .project-name{min-height:48px}
+  .project-item,.project-name,.pill,.tab,.btn,.inline-edit,.nav button{cursor:pointer}
+  .project-item:hover,.table tr:hover{background:#fff8f3}
+  .pill{padding:6px 10px}
+  .search{min-height:38px}
+  .project-task,.task{cursor:pointer}
+  .project-task:hover,.task:hover{filter:brightness(.96);outline:1px solid rgba(233,107,36,.18)}
+  .card{overflow:visible}
+  .section-title{position:relative;z-index:2}
+}
+.click-area{cursor:pointer;position:relative;z-index:3}
+.click-area:hover{filter:brightness(.985)}
+
 </style>
 </head>
 <body>
@@ -196,6 +218,11 @@ function totalPipeline(){return state.projects.reduce((s,p)=>s+p.budget,0)}
 function weighted(){return state.projects.reduce((s,p)=>s+p.budget*p.prob/100,0)}
 function pageHeader(title,sub,actions=''){return `<div class="topbar"><div><div class="eyebrow">WOWHAUS · PROJECT INTELLIGENCE DEMO</div><div class="h1">${title}</div><div class="sub">${sub}</div></div><div class="actions">${actions}</div></div>`}
 function kpi(label,value,meta,icon,cls='ic-orange'){return `<div class="card kpi"><div class="label">${label}</div><div class="value">${value}</div><div class="meta">${meta}</div><div class="kpi-icon ${cls}">${icon}</div></div>`}
+
+function clickFeedback(label){
+  showToast(label);
+}
+
 function showToast(t){let e=document.getElementById('toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',1700)}
 function openModal(){document.getElementById('modalBack').style.display='flex'} function closeModal(){document.getElementById('modalBack').style.display='none'}
 function financeMetrics(p){
@@ -352,7 +379,7 @@ function addLead(){let id=Date.now();state.projects.push({id,name:document.getEl
 
 function renderFinance(){
  let p=current(),m=financeMetrics(p);
- let list=state.projects.map(x=>`<div class="project-item ${x.id===p.id?'active':''}" onclick="state.currentProject=${x.id};saveState();renderFinance()"><div class="project-name">${thumb()}<div><b>${x.name}</b><div class="small">${x.type}<br>${x.place}</div><div style="margin-top:6px"><span class="pill ${x.status==='Риск'?'red':''}">${x.status}</span></div></div></div></div>`).join('');
+ let list=state.projects.map(x=>`<div class="project-item click-area ${x.id===p.id?'active':''}" onclick="state.currentProject=${x.id};saveState();renderFinance()"><div class="project-name">${thumb()}<div><b>${x.name}</b><div class="small">${x.type}<br>${x.place}</div><div style="margin-top:6px"><span class="pill ${x.status==='Риск'?'red':''}">${x.status}</span></div></div></div></div>`).join('');
  let actualCost=m.forecastCost*(p.hoursPlan?Math.min(1,p.hoursFact/p.hoursPlan):0);
  let actualRevenue=p.budget*(p.ready/100);
  let actualMargin=Math.max(0,actualRevenue-actualCost);
@@ -388,7 +415,7 @@ function renderFinance(){
     <div class="tabs">
       <button class="tab active" onclick="showToast('Финансовая модель активна')">Финансовая модель</button>
       <button class="tab" onclick="scrollFinanceBlock('cashBlock')">Денежный поток</button>
-      <button class="tab" onclick="scrollFinanceBlock('resourceBlock')">Ресурсы</button>
+      <button class="tab" onclick="scrollFinanceBlock('resourceBlock');clickFeedback('Переход к ресурсам')">Ресурсы</button>
       <button class="tab" onclick="showToast('Документы проекта — демо')">Документы</button>
     </div>
    </div>
@@ -452,7 +479,7 @@ function editFinance(){
 function saveFinance(){let p=current();p.budget=+document.getElementById('finBudget').value||p.budget;p.hoursPlan=+document.getElementById('finHours').value||p.hoursPlan;p.rate=+document.getElementById('finRate').value||p.rate;saveState();closeModal();renderFinance();showToast('Финмодель пересчитана')}
 function renderSchedule(){
  const months=['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
- const rows=state.projects.map(p=>`<div class="gantt-row"><div class="gantt-name"><div class="project-name">${thumb()}<div><b>${p.name}</b><div class="small">${p.type}<br>${p.place}</div><div style="margin-top:7px"><span class="pill ${p.status==='Риск'?'red':''}">${p.status}</span> <button class="btn" style="padding:4px 7px" onclick="shiftSchedule(${p.id})">Сдвинуть</button></div></div></div></div><div class="timeline"><div class="today"></div><div class="task t1" style="left:${4+p.startShift*2.3}%;width:14%">Концепция</div><div class="task t2" style="left:${20+p.startShift*2.3}%;width:16%">Эскиз</div><div class="task t3" style="left:${41+p.startShift*2.3}%;width:17%">ПД</div><div class="task t3" style="left:${57+p.startShift*2.3}%;width:20%">РД</div><div class="task t4" style="left:${78+p.startShift*1.8}%;width:15%">Согласования</div></div></div>`).join('');
+ const rows=state.projects.map(p=>`<div class="gantt-row"><div class="gantt-name"><div class="project-name">${thumb()}<div><b>${p.name}</b><div class="small">${p.type}<br>${p.place}</div><div style="margin-top:7px"><span class="pill ${p.status==='Риск'?'red':''}">${p.status}</span> <button class="btn" style="padding:4px 7px" onclick="shiftSchedule(${p.id})">Сдвинуть</button></div></div></div></div><div class="timeline"><div class="today"></div><div class="task t1 click-area" onclick="shiftSchedule(${p.id})" style="left:${4+p.startShift*2.3}%;width:14%">Концепция</div><div class="task t2 click-area" onclick="shiftSchedule(${p.id})" style="left:${20+p.startShift*2.3}%;width:16%">Эскиз</div><div class="task t3 click-area" onclick="shiftSchedule(${p.id})" style="left:${41+p.startShift*2.3}%;width:17%">ПД</div><div class="task t3 click-area" onclick="shiftSchedule(${p.id})" style="left:${57+p.startShift*2.3}%;width:20%">РД</div><div class="task t4 click-area" onclick="shiftSchedule(${p.id})" style="left:${78+p.startShift*1.8}%;width:15%">Согласования</div></div></div>`).join('');
  document.getElementById('view').innerHTML=pageHeader('Графики проектов','Ключевые вехи, сроки и зависимости между задачами. Планируйте и контролируйте графики проектов в одном месте.',`<select class="select"><option>Текущий год — 2025</option></select><button class="btn primary">+ Добавить проект</button><button class="btn">Экспорт</button>`)
  +`<div class="grid4">
  ${kpi('Активные графики',state.projects.length,'из 3 проектов','▥','ic-orange')}
@@ -518,11 +545,11 @@ function renderProject(){
    <div class="project-gantt-head">${monthNames.map(x=>`<span>${x}</span>`).join('')}</div>
    <div class="project-gantt-body">
     <div class="project-today"></div>
-    <div class="project-task t1" style="left:${4+shift}%;width:14%;top:14px">Концепция</div>
-    <div class="project-task t2" style="left:${20+shift}%;width:16%;top:14px">Эскиз</div>
-    <div class="project-task t3" style="left:${41+shift}%;width:17%;top:54px">ПД</div>
-    <div class="project-task t3" style="left:${57+shift}%;width:20%;top:54px">РД</div>
-    <div class="project-task t4" style="left:${78+shift*.7}%;width:15%;top:14px">Согласования</div>
+    <div class="project-task t1 click-area" onclick="shiftSchedule(${p.id})" style="left:${4+shift}%;width:14%;top:14px">Концепция</div>
+    <div class="project-task t2 click-area" onclick="shiftSchedule(${p.id})" style="left:${20+shift}%;width:16%;top:14px">Эскиз</div>
+    <div class="project-task t3 click-area" onclick="shiftSchedule(${p.id})" style="left:${41+shift}%;width:17%;top:54px">ПД</div>
+    <div class="project-task t3 click-area" onclick="shiftSchedule(${p.id})" style="left:${57+shift}%;width:20%;top:54px">РД</div>
+    <div class="project-task t4 click-area" onclick="shiftSchedule(${p.id})" style="left:${78+shift*.7}%;width:15%;top:14px">Согласования</div>
    </div>
   </div>
  </div>
@@ -577,6 +604,15 @@ function setView(name){
 }
 window.addEventListener('hashchange',()=>{let h=location.hash.slice(1);if(h)setView(h)});
 setView(location.hash.slice(1)||'sales');
+
+window.addEventListener('load',()=>{
+  if(window.matchMedia('(min-width:1201px)').matches){
+    document.querySelectorAll('button,.tab,.pill,.project-item,.project-task,.task').forEach(el=>{
+      el.setAttribute('tabindex', el.getAttribute('tabindex') || '0');
+    });
+  }
+});
+
 </script>
 </body>
 </html>
