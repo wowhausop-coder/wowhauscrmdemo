@@ -3,153 +3,262 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>WOWHAUS — CRM / Project Intelligence demo</title>
+<title>WOWHAUS — Project Intelligence Demo v2</title>
 <style>
 :root{
-  --bg:#f7f6f3; --panel:#fff; --line:#e9e7e2; --text:#20211f; --muted:#7c7b76;
-  --orange:#e96a24; --orange2:#f7dccd; --orange3:#fff2e9; --green:#249b63;
-  --red:#d94b43; --blue:#4d8ecb; --shadow:0 1px 2px rgba(0,0,0,.03);
+  --bg:#f7f6f3; --panel:#fff; --line:#e8e6e0; --text:#22221f; --muted:#85827b;
+  --orange:#ed6b24; --orange-soft:#fff0e6; --orange-2:#f9d7bf; --green:#23875a; --green-soft:#eaf6ef;
+  --red:#c94842; --red-soft:#fff0ef; --blue:#4b83b7; --blue-soft:#eaf2f9; --shadow:0 1px 2px rgba(0,0,0,.025);
 }
-*{box-sizing:border-box} body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
-button,input,select{font:inherit}.app{display:flex;min-height:100vh}.sidebar{width:205px;background:#fff;border-right:1px solid var(--line);padding:14px 12px;position:fixed;inset:0 auto 0 0}
-.logo{width:36px;height:36px;border-radius:8px;background:linear-gradient(180deg,#c95011,#e96a24);color:white;display:grid;place-items:center;font-weight:700;margin-bottom:16px}
-.nav-title{font-size:11px;color:#9b9993;text-transform:uppercase;margin:16px 10px 6px}.nav{display:flex;flex-direction:column;gap:4px}.nav button{border:0;background:transparent;text-align:left;padding:10px 12px;border-radius:7px;color:#555;cursor:pointer}.nav button.active{background:#fff0e7;color:#d95e17}.nav button:hover{background:#f7f5f2}
-.main{margin-left:205px;width:calc(100% - 205px);padding:22px 28px 48px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}.eyebrow{font-size:11px;color:#9a9892;letter-spacing:.04em;text-transform:uppercase}.h1{font-size:30px;font-weight:700;margin:6px 0}.sub{color:#8a8882;font-size:14px;max-width:820px}.actions{display:flex;gap:8px;align-items:center}.btn{border:1px solid var(--line);background:#fff;padding:9px 12px;border-radius:7px;cursor:pointer}.btn.primary{background:var(--orange);border-color:var(--orange);color:#fff}.btn:hover{filter:brightness(.98)}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}.card{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)}.kpi{padding:16px}.kpi .label{font-size:13px;font-weight:600}.kpi .value{font-size:30px;font-weight:700;margin:10px 0 4px}.kpi .meta{font-size:12px;color:var(--muted)}.up{color:var(--green)}.down{color:var(--red)}
-.cols2{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin-bottom:14px}.panel{padding:16px}.panel h3{font-size:16px;margin:0 0 14px}.funnel{display:grid;grid-template-columns:repeat(4,1fr);overflow:hidden;border-radius:8px}.step{padding:22px 14px;text-align:center;background:#fde0ce;border-right:2px solid #fff}.step:nth-child(2){background:#fac89f}.step:nth-child(3){background:#f89e65}.step:nth-child(4){background:#ea6a24;color:white}.step b{display:block;font-size:20px;margin-top:4px}.small{font-size:12px;color:#8b8984}.step:last-child .small{color:#fff3eb}
-.bar-chart{display:flex;align-items:end;gap:10px;height:170px;padding:8px 6px 22px;border-left:1px solid #ece9e3;border-bottom:1px solid #ece9e3}.bar{flex:1;background:#f3d6c1;position:relative;min-width:12px}.bar:after{content:"";position:absolute;left:0;right:0;bottom:0;height:30%;background:#ee7b3b}.months{display:flex;justify-content:space-between;font-size:10px;color:#8a8883;margin-top:5px}
-.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th{font-size:11px;color:#8b8984;text-align:left;font-weight:600;padding:10px;border-bottom:1px solid var(--line)}.table td{padding:12px 10px;border-bottom:1px solid #f0eeea;font-size:13px;vertical-align:middle}.table tr.clickable{cursor:pointer}.table tr.clickable:hover{background:#fff8f3}
-.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;background:#fff0e5;color:#c85d1f;font-size:12px}.pill.green{background:#eaf7ef;color:#278151}.pill.red{background:#fff0ef;color:#c74742}.pill.blue{background:#eaf3fb;color:#3873a5}
-.progress{height:7px;background:#eeeae5;border-radius:999px;overflow:hidden}.progress > span{display:block;height:100%;background:var(--orange);border-radius:999px}
-.section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.tabs{display:flex;gap:8px}.tab{border:0;background:transparent;padding:8px 10px;border-bottom:2px solid transparent;cursor:pointer}.tab.active{color:var(--orange);border-color:var(--orange)}
-.project-list{display:flex;flex-direction:column;gap:8px}.project-item{padding:12px;border:1px solid var(--line);border-radius:8px;cursor:pointer;background:#fff}.project-item.active{background:#fff4ec;border-color:#f4c7aa}.project-item:hover{background:#fff8f3}.project-item b{display:block;margin-bottom:4px}
-.fin-layout{display:grid;grid-template-columns:290px 1fr;gap:14px}.fin-grid{display:grid;grid-template-columns:1.4fr .8fr;gap:14px}.mini-bars{display:flex;align-items:end;gap:6px;height:140px}.mini-bars span{width:100%;background:#f5d3bd}.mini-bars span:nth-child(odd){background:#ef8a50}
-.gantt{overflow:auto}.gantt-grid{min-width:1100px}.gantt-head,.gantt-row{display:grid;grid-template-columns:260px 1fr;border-bottom:1px solid #efede9}.gantt-head{font-size:11px;color:#8b8984}.gantt-row{min-height:80px}.gantt-name{padding:15px}.timeline{position:relative;display:grid;grid-template-columns:repeat(12,1fr);background:repeating-linear-gradient(to right,#fff 0,#fff calc(8.333% - 1px),#f0eee9 calc(8.333% - 1px),#f0eee9 8.333%)}.task{position:absolute;height:26px;top:28px;border-radius:5px;padding:6px 8px;font-size:11px;white-space:nowrap;overflow:hidden}.t1{background:#f6c7a7}.t2{background:#f5e0c9}.t3{background:#cfe1f1}.t4{background:#bfe5cf}.today{position:absolute;top:0;bottom:0;width:2px;background:#f47732;left:67%}.today:before{content:"Сегодня";position:absolute;top:4px;left:4px;background:#f47732;color:#fff;padding:3px 6px;border-radius:4px;font-size:10px}
-.dashboard-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}.project-header{display:grid;grid-template-columns:180px 1fr;gap:16px;padding:16px}.thumb{height:110px;border-radius:8px;background:linear-gradient(135deg,#c9d8df,#faf4e6 55%,#8fa494);position:relative;overflow:hidden}.thumb:before,.thumb:after{content:"";position:absolute;background:#fff;opacity:.75}.thumb:before{width:70%;height:42%;left:15%;bottom:18%;transform:skewX(-8deg)}.thumb:after{width:50%;height:10%;left:25%;bottom:40%}.stageflow{display:grid;grid-template-columns:repeat(5,1fr);gap:2px}.stageflow div{padding:18px 10px;text-align:center;background:#f7e0ce}.stageflow div.active{background:#e96a24;color:white}.risk{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0eeea}.muted{color:var(--muted)}
-.modal-back{display:none;position:fixed;inset:0;background:rgba(0,0,0,.25);align-items:center;justify-content:center;z-index:50}.modal{width:420px;background:#fff;border-radius:12px;padding:20px;box-shadow:0 16px 50px rgba(0,0,0,.16)}.field{margin:10px 0}.field label{display:block;font-size:12px;color:#777;margin-bottom:6px}.field input,.field select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px}
-.toast{position:fixed;right:24px;bottom:24px;background:#242424;color:#fff;padding:12px 15px;border-radius:8px;display:none;z-index:60}
-@media(max-width:1100px){.sidebar{width:170px}.main{margin-left:170px;width:calc(100% - 170px)}.grid4{grid-template-columns:repeat(2,1fr)}.cols2,.fin-grid,.dashboard-grid{grid-template-columns:1fr}.fin-layout{grid-template-columns:1fr}}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select{font:inherit}
+.app{display:flex;min-height:100vh}
+.sidebar{width:220px;background:#fff;border-right:1px solid var(--line);padding:14px 12px;position:fixed;inset:0 auto 0 0;z-index:10}
+.logo{width:38px;height:38px;border-radius:8px;background:var(--orange);color:#fff;display:grid;place-items:center;font-weight:700;margin-bottom:18px}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button{border:0;background:transparent;text-align:left;padding:10px 12px;border-radius:7px;color:#57544f;cursor:pointer}
+.nav button:hover{background:#f7f5f1}
+.nav button.active{background:var(--orange-soft);color:#d95c16}
+.nav-title{font-size:10px;color:#a3a099;text-transform:uppercase;margin:18px 10px 6px}
+.main{margin-left:220px;width:calc(100% - 220px);padding:22px 28px 48px}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px}
+.eyebrow{font-size:10px;color:#99968f;letter-spacing:.06em;text-transform:uppercase}
+.h1{font-size:30px;line-height:1.15;font-weight:700;margin:5px 0 5px}
+.sub{font-size:13px;color:var(--muted);max-width:860px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:#fff;padding:8px 11px;border-radius:7px;cursor:pointer}
+.btn.primary{background:var(--orange);border-color:var(--orange);color:#fff}
+.btn.ghost{background:transparent}
+.btn:hover{filter:brightness(.985)}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.grid6{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px}
+.kpi{padding:15px}.kpi .label{font-size:12px;font-weight:600}.kpi .value{font-size:28px;font-weight:700;margin:9px 0 4px}.kpi .meta{font-size:11px;color:var(--muted)}
+.up{color:var(--green)}.down{color:var(--red)}
+.cols2{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-bottom:14px}
+.cols3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.panel{padding:15px}
+.panel h3{font-size:15px;margin:0 0 12px}
+.section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.small{font-size:11px;color:var(--muted)} .muted{color:var(--muted)}
+.table-wrap{overflow:auto}
+.table{width:100%;border-collapse:collapse}
+.table th{font-size:10px;color:#8a877f;text-align:left;font-weight:600;padding:9px;border-bottom:1px solid var(--line);white-space:nowrap}
+.table td{padding:10px 9px;border-bottom:1px solid #f0eee9;font-size:12px;vertical-align:middle}
+.table tr.clickable{cursor:pointer}.table tr.clickable:hover{background:#fff9f4}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:999px;background:var(--orange-soft);color:#c85d1f;font-size:11px}
+.pill.green{background:var(--green-soft);color:#2c7c55}.pill.red{background:var(--red-soft);color:#bc4943}.pill.blue{background:var(--blue-soft);color:#3b6e9b}
+.progress{height:7px;background:#eeeae4;border-radius:99px;overflow:hidden}.progress span{display:block;height:100%;background:var(--orange)}
+.split{display:grid;grid-template-columns:280px 1fr;gap:14px}
+.project-list{display:flex;flex-direction:column;gap:7px}
+.project-item{padding:11px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer}
+.project-item:hover{background:#fff9f4}.project-item.active{background:#fff3ea;border-color:#f2c7aa}
+.project-item b{display:block;font-size:13px;margin-bottom:3px}
+.tabs{display:flex;gap:8px}.tab{border:0;background:transparent;padding:7px 9px;border-bottom:2px solid transparent;cursor:pointer}.tab.active{border-color:var(--orange);color:var(--orange)}
+.funnel{display:grid;grid-template-columns:repeat(4,1fr);overflow:hidden;border-radius:8px}
+.step{padding:19px 10px;text-align:center;background:#fde0cd;border-right:2px solid #fff;font-size:12px}.step:nth-child(2){background:#fac69d}.step:nth-child(3){background:#f49c62}.step:nth-child(4){background:var(--orange);color:#fff}.step b{display:block;font-size:19px;margin:4px 0}
+.chart{height:180px;display:flex;align-items:end;gap:8px;border-left:1px solid #eeeae4;border-bottom:1px solid #eeeae4;padding:8px 8px 20px}
+.chart .bar{flex:1;background:#f2d3be;position:relative}.chart .bar:after{content:"";position:absolute;left:0;right:0;bottom:0;height:30%;background:#eb7a3b}
+.months{display:flex;justify-content:space-between;font-size:10px;color:#8a877f;margin-top:5px}
+.gantt{overflow:auto}.gantt-grid{min-width:1120px}.gantt-head,.gantt-row{display:grid;grid-template-columns:260px 1fr;border-bottom:1px solid #efece6}.gantt-head{font-size:10px;color:#8a877f}.gantt-row{min-height:82px}.gantt-name{padding:14px}.timeline{position:relative;display:grid;grid-template-columns:repeat(12,1fr);background:repeating-linear-gradient(to right,#fff 0,#fff calc(8.333% - 1px),#f0eee9 calc(8.333% - 1px),#f0eee9 8.333%)}.task{position:absolute;height:26px;top:29px;border-radius:5px;padding:6px 7px;font-size:10px;white-space:nowrap;overflow:hidden;cursor:pointer}.t1{background:#f5c7aa}.t2{background:#f4e0c9}.t3{background:#d2e2ef}.t4{background:#c7e7d3}.today{position:absolute;top:0;bottom:0;width:2px;background:var(--orange);left:67%}.today:before{content:"Сегодня";position:absolute;top:4px;left:4px;background:var(--orange);color:#fff;padding:3px 5px;border-radius:4px;font-size:9px}
+.project-header{display:grid;grid-template-columns:180px 1fr;gap:16px;padding:15px;margin-bottom:14px}
+.thumb{height:106px;border-radius:8px;background:linear-gradient(135deg,#d9e2e4,#f8f3e7 52%,#9daf9c);position:relative;overflow:hidden}.thumb:before,.thumb:after{content:"";position:absolute;background:#fff;opacity:.82}.thumb:before{width:70%;height:40%;left:15%;bottom:18%;transform:skewX(-8deg)}.thumb:after{width:46%;height:8%;left:26%;bottom:42%}
+.stageflow{display:grid;grid-template-columns:repeat(5,1fr);gap:2px}.stageflow div{padding:16px 9px;text-align:center;background:#f7dfce;font-size:12px}.stageflow .active{background:var(--orange);color:#fff}
+.risk{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #f0eee9;font-size:12px}
+.input-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{margin:8px 0}.field label{display:block;font-size:11px;color:#77736d;margin-bottom:5px}.field input,.field select{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:7px;background:#fff}
+.notice{padding:10px 12px;border-radius:8px;background:#fff8f2;border:1px solid #f5d7c3;color:#8a5b38;font-size:12px;margin-bottom:12px}
+.modal-back{display:none;position:fixed;inset:0;background:rgba(0,0,0,.25);align-items:center;justify-content:center;z-index:50}.modal{width:470px;max-height:86vh;overflow:auto;background:#fff;border-radius:12px;padding:18px;box-shadow:0 18px 50px rgba(0,0,0,.18)}
+.toast{position:fixed;right:24px;bottom:24px;background:#242424;color:#fff;padding:11px 14px;border-radius:8px;display:none;z-index:60;font-size:12px}
+.hero-choices{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}.hero-choice{padding:18px;cursor:pointer}.hero-choice:hover{background:#fff9f4}.hero-choice b{display:block;margin-bottom:6px}
+@media(max-width:1150px){.sidebar{width:175px}.main{margin-left:175px;width:calc(100% - 175px)}.grid4,.grid6{grid-template-columns:repeat(2,1fr)}.cols2,.cols3,.split{grid-template-columns:1fr}.hero-choices{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 <div class="app">
-  <aside class="sidebar">
-    <div class="logo">WH</div>
-    <div class="nav">
-      <button data-view="home">⌂ Главная</button>
-      <button data-view="projects">▣ Проекты</button>
-      <button data-view="sales">▥ Продажи</button>
-      <button data-view="finance">◫ Финансы</button>
-      <button data-view="schedule">▤ Графики проектов</button>
-      <button data-view="load">◔ Загрузка</button>
-      <button data-view="project">□ Дашборд проекта</button>
-    </div>
-    <div class="nav-title">Служебное</div>
-    <div class="nav">
-      <button onclick="showToast('Это демо: здесь могут быть настройки ролей и доступа')">⚙ Настройки</button>
-      <button onclick="showToast('Демо-версия для презентации руководству')">ⓘ О демо</button>
-    </div>
-  </aside>
-  <main class="main" id="view"></main>
+<aside class="sidebar">
+  <div class="logo">WH</div>
+  <div class="nav">
+    <button data-view="home">⌂ Главная</button>
+    <button data-view="projects">▣ Проекты</button>
+    <button data-view="sales">▥ Продажи</button>
+    <button data-view="finance">◫ Финансы</button>
+    <button data-view="schedule">▤ Графики проектов</button>
+    <button data-view="load">◔ Загрузка</button>
+    <button data-view="project">□ Дашборд проекта</button>
+  </div>
+  <div class="nav-title">Служебное</div>
+  <div class="nav">
+    <button onclick="showToast('В демо можно показать роли и права доступа')">⚙ Настройки</button>
+    <button onclick="resetDemo()">↻ Сбросить демо</button>
+  </div>
+</aside>
+<main class="main" id="view"></main>
 </div>
 
-<div class="modal-back" id="modalBack">
-  <div class="modal">
-    <div class="section-title"><h3 id="modalTitle" style="margin:0">Редактирование</h3><button class="btn" onclick="closeModal()">×</button></div>
-    <div id="modalBody"></div>
-  </div>
-</div>
+<div class="modal-back" id="modalBack"><div class="modal">
+  <div class="section-title"><h3 id="modalTitle" style="margin:0">Редактирование</h3><button class="btn" onclick="closeModal()">×</button></div>
+  <div id="modalBody"></div>
+</div></div>
 <div class="toast" id="toast"></div>
 
 <script>
-const projects = [
- {id:1,name:'Лотошино Resort',type:'Гостинично-рекреационный комплекс',client:'ООО «Лотошино Девелопмент»',stage:'Переговоры',budget:120,prob:70,pm:'Иван Крылов',finish:'30.09.2025',status:'В работе',margin:24,hoursPlan:9800,hoursFact:6100,ready:58},
- {id:2,name:'Банный комплекс',type:'Культурно-оздоровительный комплекс',client:'Частный инвестор',stage:'Компред',budget:85,prob:50,pm:'Анна Сергеева',finish:'15.11.2025',status:'Риск',margin:18,hoursPlan:7200,hoursFact:5000,ready:64},
- {id:3,name:'Центр художественной гимнастики',type:'Спортивный комплекс · Казань',client:'ГБУ «Спортразвитие»',stage:'В работе',budget:227.5,prob:100,pm:'Дмитрий Никитин',finish:'20.12.2025',status:'В работе',margin:23,hoursPlan:12800,hoursFact:9240,ready:68}
-];
-let currentProject = 3;
+const defaultState = {
+ currentProject: 3,
+ projects: [
+  {id:1,name:'Лотошино Resort',type:'Гостинично-рекреационный комплекс',client:'ООО «Лотошино Девелопмент»',stage:'Переговоры',budget:120,prob:70,pm:'Иван Крылов',finish:'30.09.2025',status:'В работе',margin:24,hoursPlan:9800,hoursFact:6100,ready:58,startShift:0,team:9,fteRate:0.0045},
+  {id:2,name:'Банный комплекс',type:'Культурно-оздоровительный комплекс',client:'Частный инвестор',stage:'Компред',budget:85,prob:50,pm:'Анна Сергеева',finish:'15.11.2025',status:'Риск',margin:18,hoursPlan:7200,hoursFact:5000,ready:64,startShift:1,team:7,fteRate:0.0048},
+  {id:3,name:'Центр художественной гимнастики',type:'Спортивный комплекс · Казань',client:'ГБУ «Спортразвитие»',stage:'В работе',budget:227.5,prob:100,pm:'Дмитрий Никитин',finish:'20.12.2025',status:'В работе',margin:23,hoursPlan:12800,hoursFact:9240,ready:68,startShift:2,team:12,fteRate:0.0046}
+ ],
+ assumptions:{overhead:18,subcontract:25,travel:5,reserve:5}
+};
+let state = loadState();
 
-function money(x){return x.toLocaleString('ru-RU',{maximumFractionDigits:1})}
-function pageHeader(title,sub,actions=''){
- return `<div class="topbar"><div><div class="eyebrow">WOWHAUS · DEMO</div><div class="h1">${title}</div><div class="sub">${sub}</div></div><div class="actions">${actions}</div></div>`
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function loadState(){
+ try{const s=localStorage.getItem('wowhausDemoV2'); return s?JSON.parse(s):clone(defaultState)}catch(e){return clone(defaultState)}
 }
-function kpi(label,value,meta,trend=''){
- return `<div class="card kpi"><div class="label">${label}</div><div class="value">${value}</div><div class="meta">${meta} ${trend}</div></div>`
+function saveState(){localStorage.setItem('wowhausDemoV2',JSON.stringify(state))}
+function resetDemo(){localStorage.removeItem('wowhausDemoV2');state=clone(defaultState);setView('home');showToast('Демо сброшено')}
+function money(x){return Number(x).toLocaleString('ru-RU',{maximumFractionDigits:1})}
+function project(id){return state.projects.find(p=>p.id===id)}
+function current(){return project(state.currentProject)}
+function weightedPipeline(){return state.projects.reduce((s,p)=>s+p.budget*(p.prob/100),0)}
+function totalPipeline(){return state.projects.reduce((s,p)=>s+p.budget,0)}
+function pageHeader(title,sub,actions=''){return `<div class="topbar"><div><div class="eyebrow">WOWHAUS · PROJECT INTELLIGENCE DEMO</div><div class="h1">${title}</div><div class="sub">${sub}</div></div><div class="actions">${actions}</div></div>`}
+function kpi(label,value,meta,trend=''){return `<div class="card kpi"><div class="label">${label}</div><div class="value">${value}</div><div class="meta">${meta} ${trend}</div></div>`}
+function showToast(t){let el=document.getElementById('toast');el.textContent=t;el.style.display='block';setTimeout(()=>el.style.display='none',1600)}
+function openModal(){document.getElementById('modalBack').style.display='flex'} function closeModal(){document.getElementById('modalBack').style.display='none'}
+
+function renderHome(){
+ const risk = state.projects.filter(p=>p.status==='Риск').length;
+ document.getElementById('view').innerHTML = pageHeader('Демо управленческой платформы бюро','Связанный сценарий: продажи → проект → финансовая модель → график → загрузка → проектный дашборд.')
+ + `<div class="grid4">${kpi('Воронка',money(totalPipeline())+' млн ₽','Сумма потенциальных проектов')}${kpi('Weighted pipeline',money(weightedPipeline())+' млн ₽','С учётом вероятности')}${kpi('Активные проекты',state.projects.length,'В демо-сценарии')}${kpi('Проекты с риском',risk,'Требуют внимания')}</div>
+ <div class="notice">Для презентации можно последовательно изменить вероятность сделки, плановые часы или срок проекта — изменения автоматически отразятся в других разделах и сохранятся в браузере.</div>
+ <div class="hero-choices">
+  <div class="card hero-choice" onclick="setView('sales')"><b>1. Продажи</b><span class="small">Изменить вероятность лида и увидеть weighted pipeline.</span></div>
+  <div class="card hero-choice" onclick="setView('finance')"><b>2. Финансовая модель</b><span class="small">Изменить часы и увидеть прогноз себестоимости и маржи.</span></div>
+  <div class="card hero-choice" onclick="setView('schedule')"><b>3. График проекта</b><span class="small">Сдвинуть график и получить риск по срокам.</span></div>
+  <div class="card hero-choice" onclick="setView('project')"><b>4. Дашборд проекта</b><span class="small">Посмотреть агрегированное состояние проекта.</span></div>
+ </div>`;
+}
+function renderProjects(){
+ document.getElementById('view').innerHTML = pageHeader('Проекты','Единый список проектов бюро и переход в карточку проекта.')
+ + `<div class="card panel"><table class="table"><thead><tr><th>Проект</th><th>Клиент</th><th>Статус</th><th>Стадия</th><th>Бюджет</th><th>Руководитель</th></tr></thead><tbody>${state.projects.map(p=>`<tr class="clickable" onclick="openProject(${p.id})"><td><b>${p.name}</b><div class="small">${p.type}</div></td><td>${p.client}</td><td><span class="pill ${p.status==='Риск'?'red':''}">${p.status}</span></td><td>${p.stage}</td><td>${money(p.budget)} млн ₽</td><td>${p.pm}</td></tr>`).join('')}</tbody></table></div>`;
 }
 function renderSales(){
- let rows=projects.map(p=>`<tr class="clickable" onclick="openProject(${p.id})"><td><b>${p.name}</b><div class="small">${p.type}</div></td><td>${p.client}</td><td><span class="pill" onclick="event.stopPropagation();editStage(${p.id})">${p.stage} ▾</span></td><td>${money(p.budget)}</td><td><div>${p.prob}%</div><div class="progress" style="width:110px"><span style="width:${p.prob}%"></span></div></td><td>${p.pm}</td><td>${p.finish}</td></tr>`).join('');
- document.getElementById('view').innerHTML = pageHeader('Дашборд продаж','Данные могут поступать из Pyrus; здесь — управленческая аналитика и прогноз.',`<button class="btn primary" onclick="openLeadModal()">+ Добавить лид</button><button class="btn" onclick="showToast('Экспорт подготовлен (демо)')">Экспорт</button>`)
- + `<div class="grid4">${kpi('Воронка, млн ₽','432,5','Сумма на всех стадиях','<span class="up">↑ 12%</span>')}${kpi('Выиграно, млн ₽','124,8','8 проектов','<span class="up">↑ 28%</span>')}${kpi('Конверсия','23%','Из лидов в договор','<span class="up">↑ 6 п.п.</span>')}${kpi('Средний чек, млн ₽','15,6','По выигранным проектам','')}</div>
- <div class="cols2">
-  <div class="card panel"><h3>Воронка продаж</h3><div class="funnel"><div class="step">Лид<b>432,5</b><div class="small">42 проекта</div></div><div class="step">Переговоры<b>278,0</b><div class="small">24 проекта</div></div><div class="step">Компред<b>156,4</b><div class="small">12 проектов</div></div><div class="step">Договор<b>124,8</b><div class="small">8 проектов</div></div></div></div>
-  <div class="card panel"><h3>Ожидаемая выручка по месяцам</h3><div class="bar-chart">${[12,18,28,34,38,42,48,58,66,75,86,98].map(h=>`<div class="bar" style="height:${h}%"></div>`).join('')}</div><div class="months">${['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'].map(m=>`<span>${m}</span>`).join('')}</div></div>
- </div>
- <div class="card panel"><div class="section-title"><h3>Лиды и проекты</h3><div class="tabs"><button class="tab active">Все 3</button><button class="tab">В работе</button><button class="tab">Выиграно</button></div></div><div class="table-wrap"><table class="table"><thead><tr><th>Проект</th><th>Клиент</th><th>Стадия</th><th>Бюджет, млн ₽</th><th>Вероятность</th><th>Ответственный</th><th>Плановая дата</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+ let rows = state.projects.map(p=>`<tr class="clickable" onclick="openProject(${p.id})"><td><b>${p.name}</b><div class="small">${p.type}</div></td><td>${p.client}</td><td><span class="pill">${p.stage}</span></td><td>${money(p.budget)}</td><td><div style="display:flex;align-items:center;gap:8px"><b>${p.prob}%</b><button class="btn" style="padding:4px 7px" onclick="event.stopPropagation();editProbability(${p.id})">изменить</button></div><div class="progress" style="width:110px;margin-top:5px"><span style="width:${p.prob}%"></span></div></td><td>${p.pm}</td><td>${p.finish}</td></tr>`).join('');
+ document.getElementById('view').innerHTML = pageHeader('Дашборд продаж','Pyrus остаётся источником CRM-данных; здесь — воронка, прогноз и влияние потенциальных сделок на бюро.',`<button class="btn primary" onclick="openLeadModal()">+ Добавить лид</button><button class="btn" onclick="showToast('В реальной версии — синхронизация из Pyrus')">Синхронизировать</button>`)
+ + `<div class="grid4">${kpi('Воронка, млн ₽',money(totalPipeline()),'Сумма на всех стадиях')}${kpi('Weighted pipeline, млн ₽',money(weightedPipeline()),'С учётом вероятности','<span class="up">живой расчёт</span>')}${kpi('Средняя вероятность',Math.round(state.projects.reduce((s,p)=>s+p.prob,0)/state.projects.length)+'%','По 3 проектам')}${kpi('Проектов в риске',state.projects.filter(p=>p.status==='Риск').length,'По срокам / ресурсам')}</div>
+ <div class="cols2"><div class="card panel"><h3>Воронка продаж</h3><div class="funnel"><div class="step">Лид<b>${money(totalPipeline())}</b><div class="small">все проекты</div></div><div class="step">Переговоры<b>${money(totalPipeline()*.68)}</b><div class="small">оценочно</div></div><div class="step">Компред<b>${money(totalPipeline()*.39)}</b><div class="small">оценочно</div></div><div class="step">Weighted<b>${money(weightedPipeline())}</b><div class="small">млн ₽</div></div></div></div>
+ <div class="card panel"><h3>Прогноз поступлений</h3><div class="chart">${[18,22,30,40,46,53,60,67,73,82,91,98].map(h=>`<div class="bar" style="height:${h}%"></div>`).join('')}</div><div class="months">${['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'].map(m=>`<span>${m}</span>`).join('')}</div></div></div>
+ <div class="card panel"><div class="section-title"><h3>Лиды и проекты</h3><span class="small">Клик по проекту → дашборд проекта</span></div><div class="table-wrap"><table class="table"><thead><tr><th>Проект</th><th>Клиент</th><th>Стадия</th><th>Бюджет, млн ₽</th><th>Вероятность</th><th>Ответственный</th><th>Дата</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+function editProbability(id){
+ const p=project(id); state.currentProject=id;
+ document.getElementById('modalTitle').textContent='Вероятность сделки';
+ document.getElementById('modalBody').innerHTML=`<div class="field"><label>Проект</label><input value="${p.name}" disabled></div><div class="field"><label>Вероятность, %</label><input id="probInput" type="number" min="0" max="100" value="${p.prob}"></div><div class="small">После сохранения изменится weighted pipeline и прогноз загрузки.</div><button class="btn primary" style="margin-top:12px" onclick="saveProbability()">Сохранить</button>`;
+ openModal();
+}
+function saveProbability(){
+ const p=current(); p.prob=Math.max(0,Math.min(100,+document.getElementById('probInput').value||0)); saveState(); closeModal(); renderSales(); showToast('Вероятность обновлена');
+}
+function openLeadModal(){
+ document.getElementById('modalTitle').textContent='Новый лид';
+ document.getElementById('modalBody').innerHTML=`<div class="input-grid"><div class="field"><label>Проект</label><input id="leadName" placeholder="Новый проект"></div><div class="field"><label>Бюджет, млн ₽</label><input id="leadBudget" type="number" value="60"></div></div><div class="input-grid"><div class="field"><label>Вероятность, %</label><input id="leadProb" type="number" value="25"></div><div class="field"><label>Клиент</label><input id="leadClient" value="Новый клиент"></div></div><button class="btn primary" onclick="addLead()">Добавить</button>`;
+ openModal();
+}
+function addLead(){
+ const id=Date.now();
+ state.projects.push({id,name:document.getElementById('leadName').value||'Новый проект',type:'Архитектурный проект',client:document.getElementById('leadClient').value||'Новый клиент',stage:'Лид',budget:+document.getElementById('leadBudget').value||60,prob:+document.getElementById('leadProb').value||25,pm:'—',finish:'—',status:'Планируется',margin:20,hoursPlan:4000,hoursFact:0,ready:0,startShift:0,team:4,fteRate:0.0046});
+ saveState();closeModal();renderSales();showToast('Лид добавлен');
+}
+function financeMetrics(p){
+ const labor = p.hoursPlan*p.fteRate;
+ const baseCost = labor + state.assumptions.subcontract + state.assumptions.travel + state.assumptions.overhead + state.assumptions.reserve;
+ const forecastCost = Math.min(p.budget*.95, baseCost);
+ const margin = Math.max(0,p.budget-forecastCost);
+ return {labor,forecastCost,margin,marginPct:p.budget?margin/p.budget*100:0}
 }
 function renderFinance(){
- let p=projects.find(x=>x.id===currentProject);
- let plist=projects.map(x=>`<div class="project-item ${x.id===currentProject?'active':''}" onclick="currentProject=${x.id};renderFinance()"><b>${x.name}</b><div class="small">${x.type}</div><div style="margin-top:7px"><span class="pill">${x.stage}</span></div></div>`).join('');
- document.getElementById('view').innerHTML = pageHeader('Финансовые модели','Единая финансовая модель вместо отдельных Excel-файлов: план, факт, прогноз и трудозатраты.',`<button class="btn primary" onclick="showToast('Создание модели — демо')">+ Создать модель</button><button class="btn" onclick="showToast('Экспорт в Excel — демо')">Экспорт</button>`)
- + `<div class="grid4">${kpi('Контракты, млн ₽','432,5','По 3 проектам')}${kpi('Плановая себестоимость','322,4 млн ₽','По согласованным бюджетам')}${kpi('Факт расходов','298,7 млн ₽','Освоено на сегодня')}${kpi('Прогнозная маржа','133,6 млн ₽','Ожидаемый результат')}</div>
- <div class="fin-layout"><div class="card panel"><h3>Проекты</h3><div class="project-list">${plist}</div></div><div>
-  <div class="card panel" style="margin-bottom:14px"><div class="section-title"><div><h3 style="margin:0">${p.name}</h3><div class="small">${p.type}</div></div><span class="pill">${p.stage}</span></div></div>
-  <div class="fin-grid"><div class="card panel"><h3>Финансовая модель, млн ₽</h3>
-   <table class="table"><thead><tr><th>Статья</th><th>План</th><th>Факт</th><th>Прогноз</th><th>Отклонение</th></tr></thead>
-   <tbody><tr><td><b>Выручка</b></td><td>${money(p.budget)}</td><td>${money(p.budget*.4)}</td><td>${money(p.budget)}</td><td>0%</td></tr>
-   <tr><td>ФОТ</td><td>32,0</td><td>14,5</td><td>33,0</td><td class="down">+3%</td></tr><tr><td>Субподряд</td><td>28,0</td><td>12,1</td><td>27,0</td><td class="up">-4%</td></tr>
-   <tr><td>Командировки</td><td>6,0</td><td>2,8</td><td>6,5</td><td class="down">+8%</td></tr><tr><td>Накладные</td><td>18,0</td><td>7,6</td><td>18,5</td><td class="down">+3%</td></tr>
-   <tr><td><b>Итого себестоимость</b></td><td><b>90,0</b></td><td><b>37,0</b></td><td><b>91,0</b></td><td>+1%</td></tr><tr><td><b>Маржа</b></td><td><b>30,0</b></td><td><b>11,0</b></td><td><b>29,0</b></td><td class="up">-3%</td></tr></tbody></table></div>
-   <div><div class="card panel" style="margin-bottom:14px"><h3>Денежный поток</h3><div class="mini-bars">${[20,25,35,45,52,66,72,60,68,84,92,88].map(h=>`<span style="height:${h}%"></span>`).join('')}</div></div>
-   <div class="card panel"><h3>Трудозатраты</h3><div><b>${p.hoursFact.toLocaleString('ru-RU')} / ${p.hoursPlan.toLocaleString('ru-RU')} ч</b></div><div class="progress" style="margin-top:10px"><span style="width:${Math.min(100,p.hoursFact/p.hoursPlan*100)}%"></span></div><div class="small" style="margin-top:8px">Факт / план по проекту</div></div></div>
-  </div></div></div>`;
+ const p=current(), m=financeMetrics(p);
+ const list=state.projects.map(x=>`<div class="project-item ${x.id===p.id?'active':''}" onclick="state.currentProject=${x.id};saveState();renderFinance()"><b>${x.name}</b><div class="small">${x.type}</div><div style="margin-top:6px"><span class="pill ${x.status==='Риск'?'red':''}">${x.status}</span></div></div>`).join('');
+ document.getElementById('view').innerHTML = pageHeader('Финансовые модели','Финмодель строится из параметров проекта и фактических часов — Excel остаётся только как экспорт.',`<button class="btn primary" onclick="editFinance()">Редактировать модель</button><button class="btn" onclick="showToast('Экспорт Excel — демо')">Экспорт</button>`)
+ + `<div class="grid4">${kpi('Контракты',money(totalPipeline())+' млн ₽','По проектам в демо')}${kpi('Плановые часы',state.projects.reduce((s,x)=>s+x.hoursPlan,0).toLocaleString('ru-RU'),'На 3 проекта')}${kpi('Факт часов',state.projects.reduce((s,x)=>s+x.hoursFact,0).toLocaleString('ru-RU'),'Из учёта времени')}${kpi('Прогнозная маржа',Math.round(state.projects.reduce((s,x)=>s+financeMetrics(x).margin,0))+' млн ₽','Автоматический расчёт')}</div>
+ <div class="split"><div class="card panel"><h3>Проекты</h3><div class="project-list">${list}</div></div><div>
+ <div class="card panel" style="margin-bottom:14px"><div class="section-title"><div><h3 style="margin:0">${p.name}</h3><div class="small">${p.type}</div></div><span class="pill">${p.stage}</span></div></div>
+ <div class="cols2"><div class="card panel"><h3>Финансовая модель, млн ₽</h3><table class="table"><thead><tr><th>Статья</th><th>План</th><th>Прогноз</th></tr></thead><tbody>
+ <tr><td><b>Выручка</b></td><td>${money(p.budget)}</td><td>${money(p.budget)}</td></tr>
+ <tr><td>ФОТ (из плановых часов)</td><td>${money(m.labor)}</td><td>${money(m.labor)}</td></tr>
+ <tr><td>Субподряд</td><td>${state.assumptions.subcontract}</td><td>${state.assumptions.subcontract}</td></tr>
+ <tr><td>Командировки</td><td>${state.assumptions.travel}</td><td>${state.assumptions.travel}</td></tr>
+ <tr><td>Накладные</td><td>${state.assumptions.overhead}</td><td>${state.assumptions.overhead}</td></tr>
+ <tr><td>Резерв</td><td>${state.assumptions.reserve}</td><td>${state.assumptions.reserve}</td></tr>
+ <tr><td><b>Итого себестоимость</b></td><td>—</td><td><b>${money(m.forecastCost)}</b></td></tr>
+ <tr><td><b>Маржа</b></td><td>—</td><td><b class="${m.marginPct<15?'down':'up'}">${money(m.margin)} млн ₽ · ${Math.round(m.marginPct)}%</b></td></tr></tbody></table></div>
+ <div><div class="card panel" style="margin-bottom:14px"><h3>Трудозатраты</h3><div style="font-size:26px;font-weight:700">${p.hoursFact.toLocaleString('ru-RU')} / ${p.hoursPlan.toLocaleString('ru-RU')} ч</div><div class="progress" style="margin-top:10px"><span style="width:${Math.min(100,p.hoursFact/p.hoursPlan*100)}%"></span></div><div class="small" style="margin-top:6px">Факт / план</div></div>
+ <div class="card panel"><h3>Что связано</h3><div class="risk"><span>Плановые часы</span><b>${p.hoursPlan.toLocaleString('ru-RU')}</b></div><div class="risk"><span>Прогноз ФОТ</span><b>${money(m.labor)} млн ₽</b></div><div class="risk"><span>Маржа</span><b>${Math.round(m.marginPct)}%</b></div></div></div></div></div></div>`;
+}
+function editFinance(){
+ const p=current();
+ document.getElementById('modalTitle').textContent='Редактировать финансовую модель';
+ document.getElementById('modalBody').innerHTML=`<div class="field"><label>Проект</label><input value="${p.name}" disabled></div><div class="input-grid"><div class="field"><label>Бюджет, млн ₽</label><input id="finBudget" type="number" step="0.1" value="${p.budget}"></div><div class="field"><label>Плановые часы</label><input id="finHours" type="number" value="${p.hoursPlan}"></div></div><div class="field"><label>Стоимость 1 часа, млн ₽</label><input id="finRate" type="number" step="0.0001" value="${p.fteRate}"></div><div class="small">Изменение часов автоматически пересчитывает ФОТ и прогнозную маржу.</div><button class="btn primary" style="margin-top:12px" onclick="saveFinance()">Пересчитать</button>`;
+ openModal();
+}
+function saveFinance(){
+ const p=current(); p.budget=+document.getElementById('finBudget').value||p.budget; p.hoursPlan=+document.getElementById('finHours').value||p.hoursPlan; p.fteRate=+document.getElementById('finRate').value||p.fteRate; saveState();closeModal();renderFinance();showToast('Финмодель пересчитана');
 }
 function renderSchedule(){
  const months=['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
- const rows = projects.map((p,i)=>`<div class="gantt-row"><div class="gantt-name"><b>${p.name}</b><div class="small">${p.type}</div><div style="margin-top:8px"><span class="pill ${p.status==='Риск'?'red':''}">${p.status}</span></div></div><div class="timeline"><div class="today"></div>
- <div class="task t1" style="left:${5+i*4}%;width:14%">Концепция</div><div class="task t2" style="left:${20+i*3}%;width:16%">Эскиз</div><div class="task t3" style="left:${42+i*2}%;width:18%">ПД</div><div class="task t3" style="left:${58+i*3}%;width:20%">РД</div><div class="task t4" style="left:${79-i*2}%;width:16%">Согласования</div></div></div>`).join('');
- document.getElementById('view').innerHTML=pageHeader('Графики проектов','Сроки, этапы, контрольные точки и зависимости — в одном интерфейсе.',`<button class="btn primary" onclick="showToast('Добавление проекта — демо')">+ Добавить проект</button><button class="btn" onclick="showToast('Экспорт графика — демо')">Экспорт</button>`)
- + `<div class="grid4">${kpi('Активные графики','3','из 3 проектов')}${kpi('Вехи в срок','12','из 16 вех','<span class="up">75%</span>')}${kpi('Просроченные задачи','3','из 28 задач','<span class="down">11%</span>')}${kpi('Отклонение по срокам','+18 дней','в среднем')}</div>
- <div class="card panel gantt"><h3>График проектов</h3><div class="gantt-grid"><div class="gantt-head"><div style="padding:10px 15px">Проект / этапы</div><div style="display:grid;grid-template-columns:repeat(12,1fr)">${months.map(m=>`<div style="padding:10px 4px;text-align:center">${m}</div>`).join('')}</div></div>${rows}</div></div>
- <div class="cols2" style="margin-top:14px"><div class="card panel"><h3>Ближайшие вехи</h3><table class="table"><tr><th>Дата</th><th>Проект</th><th>Веха</th><th>Статус</th></tr><tr><td>15.10.2025</td><td>Банный комплекс</td><td>Завершение ПД</td><td><span class="pill">В работе</span></td></tr><tr><td>30.10.2025</td><td>Лотошино Resort</td><td>Согласования</td><td><span class="pill blue">Планируется</span></td></tr></table></div>
- <div class="card panel"><h3>Риски и отклонения</h3><div class="risk"><span>Банный комплекс — задержка согласований</span><span class="pill red">+14 дней</span></div><div class="risk"><span>Лотошино — риск переноса тендера</span><span class="pill">+7 дней</span></div></div></div>`;
+ const rows=state.projects.map((p,i)=>`<div class="gantt-row"><div class="gantt-name"><b>${p.name}</b><div class="small">${p.type}</div><div style="margin-top:7px"><span class="pill ${p.status==='Риск'?'red':''}">${p.status}</span> <button class="btn" style="padding:4px 6px" onclick="shiftSchedule(${p.id})">сдвинуть</button></div></div><div class="timeline"><div class="today"></div>
+ <div class="task t1" style="left:${5+p.startShift*3}%;width:13%">Концепция</div><div class="task t2" style="left:${20+p.startShift*3}%;width:16%">Эскиз</div><div class="task t3" style="left:${41+p.startShift*3}%;width:17%">ПД</div><div class="task t3" style="left:${58+p.startShift*3}%;width:20%">РД</div><div class="task t4" style="left:${80+p.startShift*2}%;width:15%">Согласования</div></div></div>`).join('');
+ document.getElementById('view').innerHTML = pageHeader('Графики проектов','Сдвиг сроков связан с риском проекта и влияет на прогноз загрузки.',`<button class="btn" onclick="showToast('В MVP здесь может быть импорт/экспорт MS Project')">Экспорт</button>`)
+ + `<div class="grid4">${kpi('Активные графики',state.projects.length,'в демо')}${kpi('Проекты с риском',state.projects.filter(p=>p.status==='Риск').length,'по срокам / ресурсам')}${kpi('Макс. сдвиг',Math.max(...state.projects.map(p=>p.startShift))*7+' дней','условный сценарий')}${kpi('Weighted pipeline',money(weightedPipeline())+' млн ₽','для планирования ресурсов')}</div>
+ <div class="card panel gantt"><h3>График проектов</h3><div class="gantt-grid"><div class="gantt-head"><div style="padding:10px 14px">Проект / этапы</div><div style="display:grid;grid-template-columns:repeat(12,1fr)">${months.map(m=>`<div style="padding:10px 3px;text-align:center">${m}</div>`).join('')}</div></div>${rows}</div></div>`;
+}
+function shiftSchedule(id){
+ state.currentProject=id;const p=project(id);
+ document.getElementById('modalTitle').textContent='Сдвинуть график';
+ document.getElementById('modalBody').innerHTML=`<div class="field"><label>Проект</label><input value="${p.name}" disabled></div><div class="field"><label>Сдвиг, недель</label><input id="shiftWeeks" type="number" min="0" max="6" value="${p.startShift}"></div><div class="small">Если сдвиг ≥ 2 недель, проект автоматически получает статус «Риск».</div><button class="btn primary" style="margin-top:12px" onclick="saveShift()">Сохранить</button>`;
+ openModal();
+}
+function saveShift(){
+ const p=current(); p.startShift=Math.max(0,Math.min(6,+document.getElementById('shiftWeeks').value||0)); p.status=p.startShift>=2?'Риск':'В работе'; saveState();closeModal();renderSchedule();showToast('График обновлён');
+}
+function renderLoad(){
+ const weightedHours = state.projects.map(p=>({p,forecast:Math.round(p.hoursPlan*(p.prob/100)),load:Math.min(140,Math.round((p.hoursPlan/12000)*100 + p.startShift*8))}));
+ document.getElementById('view').innerHTML = pageHeader('Загрузка бюро','Плановая загрузка связана с активными проектами и вероятностью будущих сделок.')
+ + `<div class="grid4">${kpi('Weighted hours',weightedHours.reduce((s,x)=>s+x.forecast,0).toLocaleString('ru-RU'),'часы с учётом вероятности')}${kpi('Средняя загрузка',Math.round(weightedHours.reduce((s,x)=>s+x.load,0)/weightedHours.length)+'%','условный расчёт')}${kpi('Перегрузка',weightedHours.filter(x=>x.load>100).length,'проектов выше 100%')}${kpi('Воронка',money(weightedPipeline())+' млн ₽','влияет на capacity')}</div>
+ <div class="card panel"><table class="table"><thead><tr><th>Проект</th><th>Вероятность</th><th>Плановые часы</th><th>Weighted hours</th><th>Загрузка</th><th>Статус</th></tr></thead><tbody>${weightedHours.map(x=>`<tr><td><b>${x.p.name}</b></td><td>${x.p.prob}%</td><td>${x.p.hoursPlan.toLocaleString('ru-RU')}</td><td>${x.forecast.toLocaleString('ru-RU')}</td><td><div>${x.load}%</div><div class="progress" style="width:160px;margin-top:5px"><span style="width:${Math.min(100,x.load)}%"></span></div></td><td><span class="pill ${x.load>100?'red':''}">${x.load>100?'Перегрузка':x.p.status}</span></td></tr>`).join('')}</tbody></table></div>`;
 }
 function renderProject(){
- let p=projects.find(x=>x.id===currentProject);
- document.getElementById('view').innerHTML=pageHeader('Дашборд проекта','Единый паспорт проекта: сроки, финансы, команда, часы и риски.',`<button class="btn primary" onclick="showToast('Добавление события/риска — демо')">+ Добавить</button><button class="btn" onclick="showToast('Экспорт карточки проекта — демо')">Экспорт</button>`)
- + `<div class="card project-header"><div class="thumb"></div><div><div class="section-title"><div><h2 style="margin:0 0 5px">${p.name}</h2><div class="muted">${p.type}</div></div><span class="pill">${p.status}</span></div>
- <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:16px"><div><div class="small">Клиент</div><b>${p.client}</b></div><div><div class="small">Стадия</div><b>${p.stage}</b></div><div><div class="small">Руководитель проекта</div><b>${p.pm}</b></div><div><div class="small">Плановая дата завершения</div><b>${p.finish}</b></div></div></div></div>
- <div class="grid4" style="grid-template-columns:repeat(6,1fr);margin-top:14px">${kpi('Статус',p.status,'Реализация')}${kpi('Готовность',p.ready+'%','План 65%')}${kpi('Бюджет / факт',money(p.budget)+' / '+money(p.budget*.69),'млн ₽')}${kpi('Маржа',p.margin+'%','План 19%')}${kpi('Часы',p.hoursFact.toLocaleString('ru-RU'),'из '+p.hoursPlan.toLocaleString('ru-RU'))}${kpi('Команда','12','5 дисциплин')}</div>
- <div class="dashboard-grid"><div>
-  <div class="card panel" style="margin-bottom:14px"><h3>Стадии проекта</h3><div class="stageflow"><div>Предпроект<br><b>100%</b></div><div>Концепция<br><b>100%</b></div><div class="active">ПД<br><b>75%</b></div><div>РД<br><b>45%</b></div><div>Строительство<br><b>0%</b></div></div></div>
-  <div class="card panel"><h3>Часы и загрузка команды</h3><table class="table"><tr><th>Дисциплина</th><th>План</th><th>Факт</th><th>Загрузка</th></tr><tr><td>Архитектура</td><td>3 200</td><td>2 480</td><td>78%</td></tr><tr><td>Конструкции</td><td>2 400</td><td>1 720</td><td>72%</td></tr><tr><td>Инженерные сети</td><td>2 800</td><td>1 960</td><td>70%</td></tr><tr><td>Благоустройство</td><td>1 200</td><td>1 020</td><td>85%</td></tr></table></div>
- </div><div>
-  <div class="card panel" style="margin-bottom:14px"><h3>Ключевые вехи</h3><div class="risk"><span>Согласование концепции</span><span class="pill green">готово</span></div><div class="risk"><span>Завершение ПД</span><span class="pill">30.09.2025</span></div><div class="risk"><span>Экспертиза ПД</span><span class="pill blue">15.10.2025</span></div></div>
-  <div class="card panel" style="margin-bottom:14px"><h3>Финансовая сводка</h3><div class="risk"><span>Бюджет</span><b>${money(p.budget)} млн ₽</b></div><div class="risk"><span>Факт</span><b>${money(p.budget*.69)} млн ₽</b></div><div class="risk"><span>Маржа</span><b class="up">${p.margin}%</b></div></div>
-  <div class="card panel"><h3>Риски и вопросы</h3><div class="risk"><span>Сроки получения экспертизы</span><span class="pill red">Высокий</span></div><div class="risk"><span>Уточнение ТУ</span><span class="pill">Средний</span></div></div>
- </div></div>`;
+ const p=current(), m=financeMetrics(p), load=Math.min(140,Math.round((p.hoursPlan/12000)*100+p.startShift*8));
+ document.getElementById('view').innerHTML = pageHeader('Дашборд проекта','Единый паспорт проекта: сроки, финансы, трудозатраты, загрузка и риски.',`<button class="btn primary" onclick="editProjectCore()">Редактировать</button><button class="btn" onclick="showToast('Экспорт карточки — демо')">Экспорт</button>`)
+ + `<div class="card project-header"><div class="thumb"></div><div><div class="section-title"><div><h2 style="margin:0 0 4px">${p.name}</h2><div class="small">${p.type}</div></div><span class="pill ${p.status==='Риск'?'red':''}">${p.status}</span></div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px"><div><div class="small">Клиент</div><b>${p.client}</b></div><div><div class="small">Стадия</div><b>${p.stage}</b></div><div><div class="small">Руководитель</div><b>${p.pm}</b></div><div><div class="small">Дата завершения</div><b>${p.finish}</b></div></div></div></div>
+ <div class="grid6">${kpi('Статус',p.status,'с учётом графика')}${kpi('Готовность',p.ready+'%','текущая')}${kpi('Бюджет',money(p.budget)+' млн ₽','контракт')}${kpi('Маржа',Math.round(m.marginPct)+'%','прогноз')}${kpi('Часы',p.hoursFact.toLocaleString('ru-RU'),'из '+p.hoursPlan.toLocaleString('ru-RU'))}${kpi('Загрузка',load+'%','условный capacity')}</div>
+ <div class="cols2"><div><div class="card panel" style="margin-bottom:14px"><h3>Стадии проекта</h3><div class="stageflow"><div>Предпроект<br><b>100%</b></div><div>Концепция<br><b>100%</b></div><div class="active">ПД<br><b>75%</b></div><div>РД<br><b>45%</b></div><div>Строительство<br><b>0%</b></div></div></div>
+ <div class="card panel"><h3>Часы и команда</h3><div class="risk"><span>Плановые часы</span><b>${p.hoursPlan.toLocaleString('ru-RU')}</b></div><div class="risk"><span>Фактические часы</span><b>${p.hoursFact.toLocaleString('ru-RU')}</b></div><div class="risk"><span>Команда</span><b>${p.team} чел.</b></div><div class="risk"><span>Прогноз загрузки</span><b class="${load>100?'down':'up'}">${load}%</b></div></div></div>
+ <div><div class="card panel" style="margin-bottom:14px"><h3>Финансовая сводка</h3><div class="risk"><span>Бюджет</span><b>${money(p.budget)} млн ₽</b></div><div class="risk"><span>Прогноз себестоимости</span><b>${money(m.forecastCost)} млн ₽</b></div><div class="risk"><span>Прогноз маржи</span><b class="${m.marginPct<15?'down':'up'}">${Math.round(m.marginPct)}%</b></div></div>
+ <div class="card panel"><h3>Риски и вопросы</h3><div class="risk"><span>Сдвиг графика</span><span class="pill ${p.startShift>=2?'red':'green'}">${p.startShift} нед.</span></div><div class="risk"><span>Загрузка</span><span class="pill ${load>100?'red':'green'}">${load}%</span></div><div class="risk"><span>Маржа</span><span class="pill ${m.marginPct<15?'red':'green'}">${Math.round(m.marginPct)}%</span></div></div></div></div>`;
 }
-function renderHome(){document.getElementById('view').innerHTML=pageHeader('Главная','Демонстрационная версия единой управленческой платформы бюро.')+`<div class="grid4">${kpi('Проекты','92','в системе')}${kpi('Активные','68','в работе')}${kpi('Загрузка','87%','средняя по бюро')}${kpi('Продажи','432,5 млн ₽','воронка')}</div><div class="card panel"><h3>Что можно показать руководству</h3><p>Пройдите по меню слева: Продажи → Финансы → Графики проектов → Дашборд проекта. Все основные элементы кликабельны.</p></div>`}
-function renderProjects(){document.getElementById('view').innerHTML=pageHeader('Проекты','Список проектов бюро.')+`<div class="card panel"><table class="table"><tr><th>Проект</th><th>Статус</th><th>Стадия</th><th>Руководитель</th></tr>${projects.map(p=>`<tr class="clickable" onclick="openProject(${p.id})"><td><b>${p.name}</b><div class="small">${p.type}</div></td><td><span class="pill">${p.status}</span></td><td>${p.stage}</td><td>${p.pm}</td></tr>`).join('')}</table></div>`}
-function renderLoad(){document.getElementById('view').innerHTML=pageHeader('Загрузка проектов','Плановая загрузка сотрудников по проектам, в процентах.')+`<div class="card panel"><table class="table"><tr><th>Проект</th><th>Статус</th><th>Стадия</th><th>Команда</th><th>Загрузка</th></tr>${projects.map((p,i)=>`<tr><td><b>${p.name}</b></td><td><span class="pill">${p.status}</span></td><td>${p.stage}</td><td>${7+i*3}</td><td><div class="progress" style="width:180px"><span style="width:${75+i*7}%"></span></div></td></tr>`).join('')}</table></div>`}
-function openProject(id){currentProject=id;setView('project')}
-function editStage(id){
- let p=projects.find(x=>x.id===id);currentProject=id;
- document.getElementById('modalTitle').textContent='Изменить стадию';
- document.getElementById('modalBody').innerHTML=`<div class="field"><label>Проект</label><input value="${p.name}" disabled></div><div class="field"><label>Стадия</label><select id="stageSelect"><option>Лид</option><option>Переговоры</option><option>Компред</option><option>Договор</option><option>В работе</option></select></div><button class="btn primary" onclick="saveStage()">Сохранить</button>`;
- document.getElementById('stageSelect').value=p.stage;openModal();
+function editProjectCore(){
+ const p=current();
+ document.getElementById('modalTitle').textContent='Редактировать проект';
+ document.getElementById('modalBody').innerHTML=`<div class="field"><label>Проект</label><input value="${p.name}" disabled></div><div class="input-grid"><div class="field"><label>Готовность, %</label><input id="prReady" type="number" value="${p.ready}"></div><div class="field"><label>Факт часов</label><input id="prFact" type="number" value="${p.hoursFact}"></div></div><div class="input-grid"><div class="field"><label>Команда, чел.</label><input id="prTeam" type="number" value="${p.team}"></div><div class="field"><label>Дата завершения</label><input id="prFinish" value="${p.finish}"></div></div><button class="btn primary" onclick="saveProjectCore()">Сохранить</button>`;
+ openModal();
 }
-function saveStage(){let p=projects.find(x=>x.id===currentProject);p.stage=document.getElementById('stageSelect').value;closeModal();renderSales();showToast('Стадия обновлена в демо')}
-function openLeadModal(){document.getElementById('modalTitle').textContent='Новый лид';document.getElementById('modalBody').innerHTML=`<div class="field"><label>Название проекта</label><input id="newName" placeholder="Например, Новый проект"></div><div class="field"><label>Бюджет, млн ₽</label><input id="newBudget" value="50"></div><button class="btn primary" onclick="addLead()">Добавить</button>`;openModal()}
-function addLead(){let name=document.getElementById('newName').value||'Новый проект';projects.push({id:Date.now(),name,type:'Архитектурный проект',client:'Новый клиент',stage:'Лид',budget:+document.getElementById('newBudget').value||50,prob:20,pm:'—',finish:'—',status:'Планируется',margin:20,hoursPlan:4000,hoursFact:0,ready:0});closeModal();renderSales();showToast('Лид добавлен в демо')}
-function openModal(){document.getElementById('modalBack').style.display='flex'} function closeModal(){document.getElementById('modalBack').style.display='none'}
-function showToast(t){let el=document.getElementById('toast');el.textContent=t;el.style.display='block';setTimeout(()=>el.style.display='none',1800)}
+function saveProjectCore(){
+ const p=current(); p.ready=Math.max(0,Math.min(100,+document.getElementById('prReady').value||p.ready)); p.hoursFact=+document.getElementById('prFact').value||p.hoursFact; p.team=+document.getElementById('prTeam').value||p.team; p.finish=document.getElementById('prFinish').value||p.finish; saveState();closeModal();renderProject();showToast('Проект обновлён');
+}
+function openProject(id){state.currentProject=id;saveState();setView('project')}
 function setView(name){
  document.querySelectorAll('.nav button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
- ({home:renderHome,projects:renderProjects,sales:renderSales,finance:renderFinance,schedule:renderSchedule,load:renderLoad,project:renderProject}[name]||renderHome)();
- location.hash=name;
+ const map={home:renderHome,projects:renderProjects,sales:renderSales,finance:renderFinance,schedule:renderSchedule,load:renderLoad,project:renderProject};
+ (map[name]||renderHome)(); location.hash=name;
 }
-window.addEventListener('hashchange',()=>setView(location.hash.slice(1)||'home'));
-setView(location.hash.slice(1)||'sales');
+window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(h)setView(h)});
+setView(location.hash.slice(1)||'home');
 </script>
 </body>
 </html>
